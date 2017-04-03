@@ -98,6 +98,7 @@ def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
     
 def testingNB():
     listOPosts, listClasses = loadDataSet()
+    print(listOPosts)
     myVocabList = createVocabList(listOPosts)
     trainMat = []
     for postinDoc in listOPosts:
@@ -140,6 +141,8 @@ def spamTest():
         docList.append(wordList)
         fullText.extend(wordList)
         classList.append(1)
+        print(docList)
+        print(classList)
         wordList = textParse(open('../data/email/ham/%d.txt' % i).read())
         docList.append(wordList)
         fullText.extend(wordList)

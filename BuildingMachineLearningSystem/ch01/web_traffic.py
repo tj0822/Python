@@ -65,4 +65,8 @@ f50p = sp.polyfit(x, y, 50)
 f50 = sp.poly1d(f50p)
 plt.plot(fx, f50(fx), linewidth=4)
 
+f100p = sp.polyfit(x, y, 100)
+f100 = sp.poly1d(f100p)
+plt.plot(fx, f100(fx), linewidth=4)
+
 plt.show()

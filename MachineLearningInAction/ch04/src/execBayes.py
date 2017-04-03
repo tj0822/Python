@@ -39,8 +39,8 @@ import feedparser
 # print(p1V)
 
 
-# reload(bayes)
-# bayes.testingNB()
+reload(bayes)
+bayes.testingNB()
 
 
 # mySent = 'This book is the best book on Python or M.L. I have ever laid eyes upon.'
