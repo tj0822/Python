@@ -9,7 +9,7 @@ import urllib.request
 
 from bs4 import BeautifulSoup
 
-# 모듬 문서에 있는 모든 유일한 단어 목록을 생성(set)
+# 모든 문서에 있는 모든 유일한 단어 목록을 생성(set)
 def createVocabList(dataSet):
     vocabSet = set([])
     for document in dataSet:

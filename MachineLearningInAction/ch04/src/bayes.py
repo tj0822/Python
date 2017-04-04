@@ -35,7 +35,7 @@ def setOfWords2Vec(vocabList, inputSet):
             # print "word : " + word
             returnVec[vocabList.index(word)] = 1
         else: print("the word: %s is not in my Vocabulary!" % word)
-    print("returnVec : " + str(returnVec))
+    # print("returnVec : " + str(returnVec))
     return returnVec
 
 #4.2 나이브 베이스 분류기 훈련 함수
@@ -98,11 +98,14 @@ def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
     
 def testingNB():
     listOPosts, listClasses = loadDataSet()
+    print(listClasses)
     print(listOPosts)
     myVocabList = createVocabList(listOPosts)
     trainMat = []
     for postinDoc in listOPosts:
+        print(postinDoc)
         trainMat.append(setOfWords2Vec(myVocabList, postinDoc))
+    print(trainMat)
     p0V, p1V, pAb = trainNB0(array(trainMat), array(listClasses))
     testEntry = ['love', 'my', 'dalmation']
     thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
@@ -126,27 +129,31 @@ def bagOfWords2VecMN(vocabList, inputSet):
 #4.5 파일 구문 분석과 전체 스팸 검사 함수
 def textParse(bigString):
     import re
-    print("bigString : " + str(bigString))
+    # print("bigString : " + str(bigString))
     listOfTokens = re.split(r'\W*', bigString)
-    print("listOfTokens : " + str(listOfTokens))
+    # print("listOfTokens : " + str(listOfTokens))
     return [tok.lower() for tok in listOfTokens if len(tok) > 2]
 
 def spamTest():
     docList = []
     classList = []
     fullText = []
-    for i in range(1, 2):
-        print("i : " + str(i))
+    for i in range(1, 20):
+        # print("i : " + str(i))
         wordList = textParse(open('../data/email/spam/%d.txt' % i).read())
+        # print('wordList : ', wordList)
         docList.append(wordList)
         fullText.extend(wordList)
         classList.append(1)
-        print(docList)
-        print(classList)
+        # print(docList)
+        # print(classList)
         wordList = textParse(open('../data/email/ham/%d.txt' % i).read())
         docList.append(wordList)
         fullText.extend(wordList)
         classList.append(0)
+    print('docList : ', docList)
+    print('classList : ', classList)
+
     vocabList = createVocabList(docList)
     trainingSet = list(range(50))
     testSet = []
@@ -156,7 +163,9 @@ def spamTest():
         del(trainingSet[randIndex])
     trainMat = []
     trainClasses = []
+
     for docIndex in trainingSet:
+        print('docIndex : ', docIndex)
         trainMat.append(setOfWords2Vec(vocabList, docList[docIndex]))
         trainClasses.append(classList[docIndex])
     p0V, p1V, pSpam = trainNB0(array(trainMat), array(trainClasses))
