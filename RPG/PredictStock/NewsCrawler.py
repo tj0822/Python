@@ -234,30 +234,32 @@ class NateNews:
         for d in perdelta(date, lastDate, datetime.timedelta(days=1)):
             print(datetime.datetime.now(), ' : ', d)
             for i in range(1, getPageCount):
-                # print("Getting page " + repr(i))
-
                 target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + str(d).replace('-', '') + "&page=" + repr(i)
                 soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
-                # print(target_url)
                 # print(soup)
                 titlebody = soup.find_all("ul")
+                # print('titlebody : ', titlebody)
+                postNoList = soup.findAll("div", { "class" : "postNoList" })
+                # print('classes :', postNoList.__len__())
+                if postNoList.__len__() == 0:
+                    for item in titlebody:
+                        if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
+                            continue
+                        for li_item in item.find_all("li"):
+                            item_title = li_item.a.contents[0].strip()
 
-                for item in titlebody:
-                    if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
-                        continue
-                    for li_item in item.find_all("li"):
-
-                        item_title = li_item.a.contents[0].strip()
-
-                        if str(item_title).__contains__(keyword):
-                            item_link = base_url + li_item.a['href']
-                            item_source = li_item.span.contents[0].strip()
-                            article = {'title:': item_title,
-                                       'link': item_link,
-                                       'item_source': item_source}
-                            # print(article['item_link'])
-                            yield article
-
+                            if str(item_title).__contains__(keyword):
+                                print(item_title)
+                                item_link = base_url + li_item.a['href']
+                                item_source = li_item.span.contents[0].strip()
+                                article = {'title:': item_title,
+                                           'link': item_link,
+                                           'item_source': item_source}
+                                # print(article['item_link'])
+                                yield article
+                else:
+                    print('기사 없음')
+                    break
 
         '''
         # DB 입력
@@ -342,7 +344,7 @@ testEntry = []
 testArticleList = []
 
 def Training():
-    for article in news.crawl():
+    for article in article_list:
         # print(article)
         # title = article[0]
         # link = article[1]
@@ -394,14 +396,14 @@ def Training():
                 todayPrice = int(stockDF[stockDF['날짜'] == baseDate]['종가'])
                 prevPrice = int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가'])
                 if (todayPrice > prevPrice):
-                    # print('up')
+                    print(baseDate, ' : up')
                     classList.append(1)
                 else:
                     if (todayPrice < prevPrice):
-                        # print('down')
+                        print(baseDate, ' : down')
                         classList.append(0)
                     else:
-                        # print('hold')
+                        print(baseDate, ' : hold')
                         classList.append(0)
         except:
             pass
@@ -416,7 +418,6 @@ def Test():
     output_path = 'output_' + str(datetime.datetime.today().date())
     os.mkdir(output_path)
 
-    # print('vocaList : ', vocaList)
     vocaListFile = open(output_path + '/vocaListFile.csv', 'w')
     cw = csv.writer(vocaListFile, delimiter=',')
     cw.writerow(vocaList)
@@ -427,16 +428,19 @@ def Test():
     cw.writerow(classList)
     classListFile.close()
 
-    # print('trainMat : ', trainMat)
     trainMatFile = open(output_path + '/trainMatFile.csv', 'w')
     cw = csv.writer(trainMatFile, delimiter=',')
     cw.writerow(trainMat)
     trainMatFile.close()
-    # print('testEntry : ', testEntry)
-    # print('len(trainMat) : ', len(trainMat))
-    # print('len(classList) : ', len(classList))
-    # print('array(trainMat) : ', array(trainMat))
-    # print('array(classList) : ', array(classList))
+
+    print('vocaList : ', vocaList)
+    print('trainMat : ', trainMat)
+    print('trainingSet : ', trainingSet)
+    print('testEntry : ', testEntry)
+    print('len(trainMat) : ', len(trainMat))
+    print('len(classList) : ', len(classList))
+    print('array(trainMat) : ', array(trainMat))
+    print('array(classList) : ', array(classList))
     p0V, p1V, pAb = NaiveBayes.trainNB0(array(trainMat), array(classList))
 
     resultFileName = 'output_' + str(datetime.datetime.today().date()) + '.csv'
@@ -456,13 +460,13 @@ stockDF = Stock().getStockData()
 
 keyword = '카카오'
 newsCrawlFromDate = '2016-01-01'
-testSetFromDate = '2017-01-01'
+testSetFromDate = '2017-04-01'
 getPageCount = 300
 
 
 news = NateNews()
-# article_list = news.crawl()
-# print(article_list)
+article_list = news.crawl()
+# print('article_list : ', article_list)
 Training()
 
 Test()
