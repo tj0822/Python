@@ -12,7 +12,7 @@ from konlpy.utils import pprint
 import csv
 import NaiveBayes
 from numpy import *
-
+import os
 
 
 class Stock:
@@ -92,6 +92,27 @@ class NateNews:
         #        print('Source : ' + item_source)
         #        print('Changed : ' + item_changed)
         return list
+
+    def get_article_generator(self, category, base_url, date, page):
+        target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
+        print(target_url)
+        soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
+
+        print(soup.prettify())
+        titlebody = soup.find_all("ul")
+        for item in titlebody:
+            if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
+                continue
+            for li_item in item.find_all("li"):
+                item_title = li_item.a.contents[0].strip()
+
+                if str(item_title).__contains__(keyword):
+                    item_link = base_url + li_item.a['href']
+                    item_source = li_item.span.contents[0].strip()
+                    article = {'link':item_link,
+                               'news_source':item_source}
+                    print(article)
+                    yield article
 
     def get_content(url):
         # print(url)
@@ -211,18 +232,32 @@ class NateNews:
 
         # 기사 목록 추출
         for d in perdelta(date, lastDate, datetime.timedelta(days=1)):
-            print('d : ', d)
+            print(datetime.datetime.now(), ' : ', d)
             for i in range(1, getPageCount):
                 # print("Getting page " + repr(i))
-                list = NateNews.get_article(self, category, base_url, str(d).replace('-', ''), i)
-                if len(list) == 0:
-                    continue
-                else:
-                    for x in list:
-                        article_cnt += 1
-                        article_list.append(x)
 
-        return article_list
+                target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + str(d).replace('-', '') + "&page=" + repr(i)
+                soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
+                # print(target_url)
+                # print(soup)
+                titlebody = soup.find_all("ul")
+
+                for item in titlebody:
+                    if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
+                        continue
+                    for li_item in item.find_all("li"):
+
+                        item_title = li_item.a.contents[0].strip()
+
+                        if str(item_title).__contains__(keyword):
+                            item_link = base_url + li_item.a['href']
+                            item_source = li_item.span.contents[0].strip()
+                            article = {'title:': item_title,
+                                       'link': item_link,
+                                       'item_source': item_source}
+                            # print(article['item_link'])
+                            yield article
+
 
         '''
         # DB 입력
@@ -306,67 +341,70 @@ classList = []
 testEntry = []
 testArticleList = []
 
-def Training(article_list):
-    for article in article_list:
-        title = article[0]
-        link = article[1]
-        newspaper = article[2]
+def Training():
+    for article in news.crawl():
+        # print(article)
+        # title = article[0]
+        # link = article[1]
+        # newspaper = article[2]
         kkma = Kkma()
 
-        content, issueDateTime = NateNews.get_content(link)
-        issueDateTime = pd.to_datetime(issueDateTime)
-        # issueDate = time.strftime('%Y-%m-%d', issueDateTime)
-        # issueTime = time.strftime('%H:%M:%S', issueDateTime)
-        issueDate = issueDateTime.date()
-        issueTime = issueDateTime.time()
+        try:
+            content, issueDateTime = NateNews.get_content(article['link'])
+            issueDateTime = pd.to_datetime(issueDateTime)
+            # issueDate = time.strftime('%Y-%m-%d', issueDateTime)
+            # issueTime = time.strftime('%H:%M:%S', issueDateTime)
+            issueDate = issueDateTime.date()
+            issueTime = issueDateTime.time()
 
-        # 형태소 분석
-        wordList = kkma.nouns(content)
+            # 형태소 분석
+            wordList = kkma.nouns(content)
 
-        # 2글자 이상만 필터링
-        wordList = [x for x in wordList if len(x) > 1]
+            # 2글자 이상만 필터링
+            wordList = [x for x in wordList if len(x) > 1]
 
-        # print(title)
-        # print('wordList : ', wordList)
-        # print(issueDateTime)
-        # print(link)
-        # print(newspaper)
-        # print(issueDate)
-        # print('wordList : ', wordList)
+            # print(title)
+            # print('wordList : ', wordList)
+            # print(issueDateTime)
+            # print(link)
+            # print(newspaper)
+            # print(issueDate)
+            # print('wordList : ', wordList)
 
-        baseDate = ''
-        if issueTime > pd.to_datetime('15:30:00').time():
-            # print('장 마감 이후')
-            baseDate = stockDF[stockDF['날짜'] > issueDate].head(1)['날짜']
-        else:
-            # print('장 마감 이전')
-            baseDate = stockDF[stockDF['날짜'] >= issueDate].head(1)['날짜']
-
-        # print(type(baseDate))
-        if issueDate > pd.to_datetime(testSetFromDate).date() or len(baseDate) == 0:
-            # test set
-            testEntry.append({'issueDateTime': issueDateTime, 'wordList': wordList})
-        else:
-            # trainning set
-            baseDate = pd.Series(baseDate).values[0]
-            # print('해당 일자 주식 확인 : ', baseDate)
-            trainingSet.append({'issueDateTime': issueDateTime, 'wordList': wordList})
-            # print(int(stockDF[stockDF['날짜'] == baseDate]['종가']))
-            # print(int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가']))
-
-            todayPrice = int(stockDF[stockDF['날짜'] == baseDate]['종가'])
-            prevPrice = int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가'])
-            if (todayPrice > prevPrice):
-                print('up')
-                classList.append(1)
+            baseDate = ''
+            if issueTime > pd.to_datetime('15:30:00').time():
+                # print('장 마감 이후')
+                baseDate = stockDF[stockDF['날짜'] > issueDate].head(1)['날짜']
             else:
-                if (todayPrice < prevPrice):
-                    print('down')
-                    classList.append(-1)
-                else:
-                    print('hold')
-                    classList.append(0)
+                # print('장 마감 이전')
+                baseDate = stockDF[stockDF['날짜'] >= issueDate].head(1)['날짜']
 
+            # print(type(baseDate))
+            if issueDate > pd.to_datetime(testSetFromDate).date() or len(baseDate) == 0:
+                # test set
+                testEntry.append({'issueDateTime': issueDateTime, 'wordList': wordList})
+            else:
+                # trainning set
+                baseDate = pd.Series(baseDate).values[0]
+                # print('해당 일자 주식 확인 : ', baseDate)
+                trainingSet.append({'issueDateTime': issueDateTime, 'wordList': wordList})
+                # print(int(stockDF[stockDF['날짜'] == baseDate]['종가']))
+                # print(int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가']))
+
+                todayPrice = int(stockDF[stockDF['날짜'] == baseDate]['종가'])
+                prevPrice = int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가'])
+                if (todayPrice > prevPrice):
+                    # print('up')
+                    classList.append(1)
+                else:
+                    if (todayPrice < prevPrice):
+                        # print('down')
+                        classList.append(0)
+                    else:
+                        # print('hold')
+                        classList.append(0)
+        except:
+            pass
 
 def Test():
     vocaList = NaiveBayes.createVocabList(trainingSet)
@@ -375,8 +413,25 @@ def Test():
     for postinDoc in trainingSet:
         trainMat.append(NaiveBayes.setOfWords2Vec(vocaList, postinDoc['wordList']))
 
+    output_path = 'output_' + str(datetime.datetime.today().date())
+    os.mkdir(output_path)
+
     # print('vocaList : ', vocaList)
+    vocaListFile = open(output_path + '/vocaListFile.csv', 'w')
+    cw = csv.writer(vocaListFile, delimiter=',')
+    cw.writerow(vocaList)
+    vocaListFile.close()
+
+    classListFile = open(output_path + '/classListFile.csv', 'w')
+    cw = csv.writer(classListFile, delimiter=',')
+    cw.writerow(classList)
+    classListFile.close()
+
     # print('trainMat : ', trainMat)
+    trainMatFile = open(output_path + '/trainMatFile.csv', 'w')
+    cw = csv.writer(trainMatFile, delimiter=',')
+    cw.writerow(trainMat)
+    trainMatFile.close()
     # print('testEntry : ', testEntry)
     # print('len(trainMat) : ', len(trainMat))
     # print('len(classList) : ', len(classList))
@@ -406,9 +461,8 @@ getPageCount = 300
 
 
 news = NateNews()
-article_list = news.crawl()
+# article_list = news.crawl()
 # print(article_list)
-Training(article_list)
-print('article_list count :', len(article_list))
-print('testEntry count : ', len(testEntry))
+Training()
+
 Test()

@@ -6,8 +6,8 @@ from numpy import *
 def createVocabList(dataSet):
     vocabSet = set([])
     for document in dataSet:
-        print(document)
-        print(document['wordList'])
+        # print('document : ', document)
+        # print(document['wordList'])
         vocabSet = vocabSet | set(document['wordList'])  # | : 집합 유형 변수 합치기
     return list(vocabSet)
 
@@ -16,7 +16,7 @@ def setOfWords2Vec(vocabList, inputSet):
     returnVec = [0]*len(vocabList)
     for word in inputSet:
         if word in vocabList:
-            # print "word : " + word
+            # print("word : ", word)
             returnVec[vocabList.index(word)] = 1
         else:
             pass
@@ -68,9 +68,9 @@ def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
     # print("vec2Classify * p1Vec : " + str(vec2Classify * p1Vec))
     # print("vec2Classify * p0Vec : " + str(vec2Classify * p0Vec))
     p1 = sum(vec2Classify * p1Vec) + log(pClass1)
-    print("p1 : ", p1)
+    # print("p1 : ", p1)
     p0 = sum(vec2Classify * p0Vec) + log(1.0 - pClass1)
-    print("p0 : ", p0)
+    # print("p0 : ", p0)
     if p1 > p0:
         return 1
     else:
