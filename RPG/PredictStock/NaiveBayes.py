@@ -17,7 +17,7 @@ def setOfWords2Vec(vocabList, inputSet):
     for word in inputSet:
         if word in vocabList:
             # print("word : ", word)
-            returnVec[vocabList.index(word)] = 1
+            returnVec[vocabList.index(word)] += 1
         else:
             pass
             # print("the word: %s is not in my Vocabulary!" % word)

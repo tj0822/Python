@@ -14,10 +14,11 @@ import NaiveBayes
 from numpy import *
 import os
 
+tagList = ['NNG', 'NNP', 'NNB', 'NNM', 'VV', 'VA', 'VXV', 'UN']
 
 class Stock:
     def getStockData(self):
-        fileName = 'data/가격정보(035720_카카오)_2017-04-10.csv'  # 2014.5.26 가격정보 이상
+        fileName = 'data/가격정보(035720_카카오)_2017-04-25.csv'  # 2014.5.26 가격정보 이상
 
         stockData = open(fileName, 'r', encoding='euc-kr')
         reader = csv.reader(stockData)
@@ -249,7 +250,7 @@ class NateNews:
                             item_title = li_item.a.contents[0].strip()
 
                             if str(item_title).__contains__(keyword):
-                                print(item_title)
+                                # print(item_title)
                                 item_link = base_url + li_item.a['href']
                                 item_source = li_item.span.contents[0].strip()
                                 article = {'title:': item_title,
@@ -258,7 +259,7 @@ class NateNews:
                                 # print(article['item_link'])
                                 yield article
                 else:
-                    print('기사 없음')
+                    # print('기사 없음')
                     break
 
         '''
@@ -360,11 +361,12 @@ def Training():
             issueTime = issueDateTime.time()
 
             # 형태소 분석
-            wordList = kkma.nouns(content)
+            # wordList = kkma.pos(content)
 
-            # 2글자 이상만 필터링
-            wordList = [x for x in wordList if len(x) > 1]
+            # [보통명사 동사 형용사 보조동사 명사추정범주] 필터링
+            wordList = getWords(kkma.pos(content))
 
+            wordList = list(wordList)
             # print(title)
             # print('wordList : ', wordList)
             # print(issueDateTime)
@@ -396,17 +398,22 @@ def Training():
                 todayPrice = int(stockDF[stockDF['날짜'] == baseDate]['종가'])
                 prevPrice = int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가'])
                 if (todayPrice > prevPrice):
-                    print(baseDate, ' : up')
+                    # print(baseDate, ' : up')
                     classList.append(1)
                 else:
                     if (todayPrice < prevPrice):
-                        print(baseDate, ' : down')
+                        # print(baseDate, ' : down')
                         classList.append(0)
                     else:
-                        print(baseDate, ' : hold')
+                        # print(baseDate, ' : hold')
                         classList.append(0)
         except:
             pass
+
+def getWords(wordList):
+    for word in wordList:
+        if(tagList.__contains__(word[1])):
+            yield word[0]
 
 def Test():
     vocaList = NaiveBayes.createVocabList(trainingSet)
@@ -433,14 +440,14 @@ def Test():
     cw.writerow(trainMat)
     trainMatFile.close()
 
-    print('vocaList : ', vocaList)
-    print('trainMat : ', trainMat)
-    print('trainingSet : ', trainingSet)
-    print('testEntry : ', testEntry)
-    print('len(trainMat) : ', len(trainMat))
-    print('len(classList) : ', len(classList))
-    print('array(trainMat) : ', array(trainMat))
-    print('array(classList) : ', array(classList))
+    # print('vocaList : ', vocaList)
+    # print('trainMat : ', trainMat)
+    # print('trainingSet : ', trainingSet)
+    # print('testEntry : ', testEntry)
+    # print('len(trainMat) : ', len(trainMat))
+    # print('len(classList) : ', len(classList))
+    # print('array(trainMat) : ', array(trainMat))
+    # print('array(classList) : ', array(classList))
     p0V, p1V, pAb = NaiveBayes.trainNB0(array(trainMat), array(classList))
 
     resultFileName = 'output_' + str(datetime.datetime.today().date()) + '.csv'
@@ -460,7 +467,7 @@ stockDF = Stock().getStockData()
 
 keyword = '카카오'
 newsCrawlFromDate = '2016-01-01'
-testSetFromDate = '2017-04-01'
+testSetFromDate = '2017-01-01'
 getPageCount = 300
 
 
