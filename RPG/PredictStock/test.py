@@ -1,46 +1,22 @@
 # -*- coding: utf-8 -*-
+import csv
 
-a = [('한국', 'NNG'),
- ('카카오', 'NNG'),
- ('는', 'JX'),
- ('3', 'NR'),
- ('일', 'NNM'),
- ('경기도', 'NNP'),
- ('성남시', 'NNP'),
- ('카카오', 'NNG'),
- ('뱅크', 'NNP'),
- ('에서', 'JKM'),
- ('이사회', 'NNG'),
- ('를', 'JKO'),
- ('열', 'VV'),
- ('고', 'ECE'),
- ('카카오', 'NNG'),
- ('뱅크', 'NNP'),
- ('이사회', 'NNG'),
- ('의장', 'NNG'),
- ('에', 'JKM'),
- ('김', 'NNG'),
- ('주원', 'NNG'),
- ('한국', 'NNG'),
- ('투자', 'NNG'),
- ('금융', 'NNG'),
- ('지주', 'NNG'),
- ('사장', 'NNG'),
- ('을', 'JKO'),
- ('재', 'XPN'),
- ('선임', 'NNG'),
- ('하', 'XSV')]
+fileName = 'output_2017-05-19/trainMatFile.csv'
+# fileName = 'output_2017-05-19/vocaListFile.csv'
+# fileName = 'output_2017-05-19/classListFile.csv'
+trainMatFilte = open(fileName, 'r', encoding='UTF-8')
+reader = csv.reader(trainMatFilte)#, delimiter=',')#, quotechar='|')
 
-tagList = ['NNG', 'VV', 'VA', 'VXV', 'UN']
+print(len(list(reader)[0][3]))
 
-def getWords(a):
-    for w in a:
-        if(tagList.__contains__(w[1])):
-            yield w[0]
-print(tagList)
 
-words = getWords(a)
-print(words)
+# for l in reader:
+#   print(len(l[0]))
+#   print(len(l[2]))
+  # for i in l:
+  #   print(i)
 
-for i in words:
-    print(i)
+# print(trainMatList[0][1])
+# print(trainMatList[1])
+# for l in trainMatList:
+#   print(l)

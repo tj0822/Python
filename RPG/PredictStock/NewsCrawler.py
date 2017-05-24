@@ -10,7 +10,7 @@ import sqlite3
 from konlpy.tag import Kkma
 from konlpy.utils import pprint
 import csv
-import NaiveBayes
+import RPG.PredictStock.NaiveBayes as nb
 from numpy import *
 import os
 
@@ -41,32 +41,34 @@ class Stock:
 
 class NateNews:
 
-    def get_article(self, category, base_url, base_year, date, page):
-        list = []
-        target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
-        # print(target_url)
-        soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
-        # print(soup.prettify())
-        titlebody = soup.find_all("ul")
-        for item in titlebody:
-            if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
-                continue
-            for li_item in item.find_all("li"):
-                item_title = li_item.a.contents[0].strip()
 
-                if str(item_title).__contains__(keyword):
-                    # print(item_title)
-                    item_link = base_url + li_item.a['href']
-                    item_source = li_item.span.contents[0].strip()
-                    item_changed = time.strptime(base_year + '-' + li_item.em.contents[0], '%Y-%m-%d %H:%M')
-                    list.append((item_title, item_link, item_source, item_changed))
+    # def get_article(self, category, base_url, base_year, date, page):
+    #     list = []
+    #     target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
+    #     # print(target_url)
+    #     soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
+    #     # print(soup.prettify())
+    #     titlebody = soup.find_all("ul")
+    #     for item in titlebody:
+    #         if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
+    #             continue
+    #         for li_item in item.find_all("li"):
+    #             item_title = li_item.a.contents[0].strip()
+    #
+    #             if str(item_title).__contains__(keyword):
+    #                 # print(item_title)
+    #                 item_link = base_url + li_item.a['href']
+    #                 item_source = li_item.span.contents[0].strip()
+    #                 item_changed = time.strptime(base_year + '-' + li_item.em.contents[0], '%Y-%m-%d %H:%M')
+    #                 list.append((item_title, item_link, item_source, item_changed))
+    #
+    #             # print([item_title, item_link, item_source, item_changed])
+    #             # print('Title : ' + item_title)
+    #     # print('Link : ' + item_link)
+    #     #        print('Source : ' + item_source)
+    #     #        print('Changed : ' + item_changed)
+    #     return list
 
-                # print([item_title, item_link, item_source, item_changed])
-                # print('Title : ' + item_title)
-        # print('Link : ' + item_link)
-        #        print('Source : ' + item_source)
-        #        print('Changed : ' + item_changed)
-        return list
 
     def get_article(self, category, base_url, date, page):
         list = []
@@ -132,9 +134,7 @@ class NateNews:
             con = ""
             try:
                 for child in body.children:
-                    if (not isinstance(child, NavigableString) or isinstance(child,
-                                                                             Comment)) or child.string is None or len(
-                        child.string.strip()) == 0:
+                    if (not isinstance(child, NavigableString) or isinstance(child, Comment)) or child.string is None or len(child.string.strip()) == 0:
                         continue
                     # print(child)
                     con += child.string.strip() + '\r\n'
@@ -247,72 +247,24 @@ class NateNews:
                         if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
                             continue
                         for li_item in item.find_all("li"):
-                            item_title = li_item.a.contents[0].strip()
+                            try:
+                                item_title = li_item.a.contents[0].strip()
 
-                            if str(item_title).__contains__(keyword):
-                                # print(item_title)
-                                item_link = base_url + li_item.a['href']
-                                item_source = li_item.span.contents[0].strip()
-                                article = {'title:': item_title,
-                                           'link': item_link,
-                                           'item_source': item_source}
-                                # print(article['item_link'])
-                                yield article
+                                if str(item_title).__contains__(keyword):
+                                    print(item_title)
+                                    item_link = base_url + li_item.a['href']
+                                    item_source = li_item.span.contents[0].strip()
+                                    article = {'title:': item_title,
+                                               'link': item_link,
+                                               'item_source': item_source}
+                                    # print(article['item_link'])
+                                    yield article
+                            except:
+                                continue
+
                 else:
                     # print('기사 없음')
                     break
-
-        '''
-        # DB 입력
-        conn = pymssql.connect(host='10.90.2.203', user='cas203test', password='!@#qwe123', database='SK_DATA_TEST', autocommit=False)
-        cursor = conn.cursor()
-        insert_list = []
-        for idx in range(0, len(article_list)):
-            article = article_list[idx]
-            content = content_list[idx]
-        #    print((category, article[2], date, content[0], content[1], content[2], article[1], time.strftime('%Y-%m-%d %H:%M', article[3])))
-            insert_list.append((category, article[2], date, content[0], content[1], article[1], time.strftime('%Y-%m-%d %H:%M', article[3])))
-
-        try:
-            cursor.executemany('INSERT INTO RPG_NEWS_ARCHIVE (CATEGORY, PUBLISHER, NEWS_DATE, TITLE, CONTENT, NEWS_URL, CHANGED_DATE) VALUES (%s, %s, %s, %s, %s, %s, %s)', insert_list)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except:
-            conn.rollback()
-        conn.commit()
-        conn.close()
-        '''
-
-        '''
-        url = 'http://news.nate.com/view/20170320n43784?mid=n0301'
-        #url = 'http://news.nate.com/view/20170320n33014?mid=n0301'
-        #url = 'http://news.nate.com/view/20170320n29461?mid=n0301'
-        print(self.get_content2(url))
-        '''
-
-        '''
-        soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
-        #print(soup.prettify())
-        content = soup.find(id="articleView")
-        body = soup.find(id="realArtcContents")
-        #print(body)
-
-        sub = body.contents[0]
-        while True:
-            if sub is None:
-                break
-            print(isinstance(sub, Tag))
-            print(type(sub))
-            print(sub)
-            sub = sub.next_sibling
-        #    if sub.Name == 'p':
-        #        print(sub.string.strip())
-            #print(sub)
-            #print(sub)
-        #    for str in br.stripped_strings:
-        #        print(str)
-
-        '''
 
 
 class NaverNews:
@@ -412,15 +364,15 @@ def Training():
 
 def getWords(wordList):
     for word in wordList:
-        if(tagList.__contains__(word[1])):
+        if(len(word[0]) > 1 and tagList.__contains__(word[1])):
             yield word[0]
 
 def Test():
-    vocaList = NaiveBayes.createVocabList(trainingSet)
+    vocaList = nb.createVocabList(trainingSet)
 
     trainMat = []
     for postinDoc in trainingSet:
-        trainMat.append(NaiveBayes.setOfWords2Vec(vocaList, postinDoc['wordList']))
+        trainMat.append(nb.setOfWords2Vec(vocaList, postinDoc['wordList']))
 
     output_path = 'output_' + str(datetime.datetime.today().date())
     os.mkdir(output_path)
@@ -448,15 +400,15 @@ def Test():
     # print('len(classList) : ', len(classList))
     # print('array(trainMat) : ', array(trainMat))
     # print('array(classList) : ', array(classList))
-    p0V, p1V, pAb = NaiveBayes.trainNB0(array(trainMat), array(classList))
+    p0V, p1V, pAb = nb.trainNB0(array(trainMat), array(classList))
 
     resultFileName = 'output_' + str(datetime.datetime.today().date()) + '.csv'
     f = open(resultFileName, 'w')
-    cw = csv.writer(f, delimiter=',', quotechar='|')
+    cw = csv.writer(f)
 
     for entry in testEntry:
-        thisDoc = array(NaiveBayes.setOfWords2Vec(vocaList, entry['wordList']))
-        result = NaiveBayes.classifyNB(thisDoc, p0V, p1V, pAb)
+        thisDoc = array(nb.setOfWords2Vec(vocaList, entry['wordList']))
+        result = nb.classifyNB(thisDoc, p0V, p1V, pAb)
         cw.writerow([entry['issueDateTime'], result])
         # print(entry['issueDateTime'], '기사 이후 주가는 ?\n', result)
 
@@ -466,7 +418,7 @@ stockDF = Stock().getStockData()
 # print(stockDF)
 
 keyword = '카카오'
-newsCrawlFromDate = '2016-01-01'
+newsCrawlFromDate = '2015-01-01'
 testSetFromDate = '2017-01-01'
 getPageCount = 300
 

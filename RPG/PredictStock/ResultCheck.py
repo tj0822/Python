@@ -27,8 +27,8 @@ class Stock:
 
 stockDF = Stock.getStockData()
 
-outputFileName = 'output_2017-04-25_2.csv'
-outputData = stockData = open(outputFileName, 'r', encoding='euc-kr')
+outputFileName = 'output_2017-05-22.csv'
+stockData = open(outputFileName, 'r', encoding='euc-kr')
 reader = csv.reader(stockData)
 outputList = list(reader)
 
@@ -40,7 +40,8 @@ falseCnt = 0
 
 baseDate = ''
 for r in outputList:
-    issueDateTime = pd.to_datetime(r[0])
+
+    issueDateTime = pd.to_datetime(r[1])
     # print(pd.to_datetime(r[0]).time())
     if issueDateTime.time() > pd.to_datetime('15:30:00').time():
         # print('장 마감 이후')
@@ -60,7 +61,8 @@ for r in outputList:
         else:
             r.append('0')
 
-        if(r[1] == r[2]):
+        print(r)
+        if(str(r[2]).replace(' ', '') == r[3]):
             trueCnt += 1
         else:
             falseCnt += 1
