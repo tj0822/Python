@@ -17,6 +17,7 @@ import os
 tagList = ['NNG', 'NNP', 'NNB', 'NNM', 'VV', 'VA', 'VXV', 'UN']
 
 class Stock:
+    @property
     def getStockData(self):
         fileName = 'data/가격정보(035720_카카오)_2017-04-25.csv'  # 2014.5.26 가격정보 이상
 
@@ -414,7 +415,7 @@ def Test():
 
     f.close()
 
-stockDF = Stock().getStockData()
+stockDF = Stock().getStockData
 # print(stockDF)
 
 keyword = '카카오'
