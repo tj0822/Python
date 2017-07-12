@@ -16,28 +16,15 @@ import os
 
 tagList = ['NNG', 'NNP', 'NNB', 'NNM', 'VV', 'VA', 'VXV', 'UN']
 
+
 class Stock:
     @property
     def getStockData(self):
-        fileName = 'data/가격정보(035720_카카오)_2017-04-25.csv'  # 2014.5.26 가격정보 이상
+        fileName = 'data/카카오_19991111~20170712.csv'
 
-        stockData = open(fileName, 'r', encoding='euc-kr')
-        reader = csv.reader(stockData)
-        stockList = list(reader)
-        # print(stockList[0])
-        df = pd.DataFrame(stockList[1:])
-        df.columns = stockList[0]
-        df = df[df['시가'] != '']
-
-        df['날짜'] = pd.to_datetime(df['날짜'])
-        df['종가'] = pd.Series(df['종가'].str.replace(',', ''))
-        df['시가'] = pd.Series(df['시가'].str.replace(',', ''))
-        df['고가'] = pd.Series(df['고가'].str.replace(',', ''))
-        df['저가'] = pd.Series(df['저가'].str.replace(',', ''))
-
-        df = df.sort_values(by=['날짜'], ascending=[True])
-        # df = df[df['날짜'] >= '2016-01-01']
-        return df
+        stockDF = pd.read_csv(fileName)
+        stockDF = stockDF.sort_values(by=['datetime'], ascending=[True])
+        return stockDF
 
 
 class NateNews:
@@ -99,10 +86,10 @@ class NateNews:
 
     def get_article_generator(self, category, base_url, date, page):
         target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
-        print(target_url)
+        # print(target_url)
         soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
 
-        print(soup.prettify())
+        # print(soup.prettify())
         titlebody = soup.find_all("ul")
         for item in titlebody:
             if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
@@ -115,7 +102,7 @@ class NateNews:
                     item_source = li_item.span.contents[0].strip()
                     article = {'link':item_link,
                                'news_source':item_source}
-                    print(article)
+                    # print(article)
                     yield article
 
     def get_content(url):
@@ -229,7 +216,7 @@ class NateNews:
         date = datetime.datetime.strptime(newsCrawlFromDate, "%Y-%m-%d").date()
         lastDate = datetime.date.today()
 
-        article_list = []
+
         article_cnt = 0
 
         # 기사 목록 추출
@@ -240,7 +227,7 @@ class NateNews:
                 soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
                 # print(soup)
                 titlebody = soup.find_all("ul")
-                # print('titlebody : ', titlebody)
+
                 postNoList = soup.findAll("div", { "class" : "postNoList" })
                 # print('classes :', postNoList.__len__())
                 if postNoList.__len__() == 0:
@@ -259,7 +246,7 @@ class NateNews:
                                                'link': item_link,
                                                'item_source': item_source}
                                     # print(article['item_link'])
-                                    yield article
+                                    article_list.append(article)
                             except:
                                 continue
 
@@ -317,9 +304,8 @@ def Training():
             # wordList = kkma.pos(content)
 
             # [보통명사 동사 형용사 보조동사 명사추정범주] 필터링
-            wordList = getWords(kkma.pos(content))
 
-            wordList = list(wordList)
+
             # print(title)
             # print('wordList : ', wordList)
             # print(issueDateTime)
@@ -327,15 +313,33 @@ def Training():
             # print(newspaper)
             # print(issueDate)
             # print('wordList : ', wordList)
+            wordList = list(getWords(kkma.pos(content)))
+
+            ws = set(wordList)
+            print('ws : ', ws)
+            dic = {}
+            for word in ws:
+                print('word : ', word)
+                dic.update({word: wordList.count(word)})
+
+            print('dic : ', dic)
+            n = 10
+            listdic = sorted(dic.items(), key=operator.itemgetter(1), reverse=True)[:n]
+            print('listdic : ', listdic)
+
+            for l in listdic:
+                print('l : ', l)
+                wordList.append(l[0])
 
             baseDate = ''
             if issueTime > pd.to_datetime('15:30:00').time():
                 # print('장 마감 이후')
-                baseDate = stockDF[stockDF['날짜'] > issueDate].head(1)['날짜']
+                baseDate = stockDF[stockDF['datetime'] > issueDate].head(1)['datetime']
             else:
                 # print('장 마감 이전')
-                baseDate = stockDF[stockDF['날짜'] >= issueDate].head(1)['날짜']
-
+                baseDate = stockDF[stockDF['datetime'] >= issueDate].head(1)['datetime']
+            print('issueTime : ', issueTime)
+            print('baseDate : ', baseDate)
             # print(type(baseDate))
             if issueDate > pd.to_datetime(testSetFromDate).date() or len(baseDate) == 0:
                 # test set
@@ -345,11 +349,12 @@ def Training():
                 baseDate = pd.Series(baseDate).values[0]
                 # print('해당 일자 주식 확인 : ', baseDate)
                 trainingSet.append({'issueDateTime': issueDateTime, 'wordList': wordList})
+                print(trainingSet)
                 # print(int(stockDF[stockDF['날짜'] == baseDate]['종가']))
                 # print(int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가']))
 
-                todayPrice = int(stockDF[stockDF['날짜'] == baseDate]['종가'])
-                prevPrice = int(stockDF[stockDF['날짜'] < baseDate].tail(1)['종가'])
+                todayPrice = int(stockDF[stockDF['datetime'] == baseDate]['close'])
+                prevPrice = int(stockDF[stockDF['datetime'] < baseDate].tail(1)['close'])
                 if (todayPrice > prevPrice):
                     # print(baseDate, ' : up')
                     classList.append(1)
@@ -369,7 +374,11 @@ def getWords(wordList):
             yield word[0]
 
 def Test():
+    print('trainingSet : ', trainingSet)
+
     vocaList = nb.createVocabList(trainingSet)
+
+    print('vocaList : ', vocaList)
 
     trainMat = []
     for postinDoc in trainingSet:
@@ -401,6 +410,8 @@ def Test():
     # print('len(classList) : ', len(classList))
     # print('array(trainMat) : ', array(trainMat))
     # print('array(classList) : ', array(classList))
+    print('trainMat : ', trainMat)
+    print('classList : ', classList)
     p0V, p1V, pAb = nb.trainNB0(array(trainMat), array(classList))
 
     resultFileName = 'output_' + str(datetime.datetime.today().date()) + '.csv'
@@ -419,13 +430,13 @@ stockDF = Stock().getStockData
 # print(stockDF)
 
 keyword = '카카오'
-newsCrawlFromDate = '2015-01-01'
-testSetFromDate = '2017-01-01'
-getPageCount = 300
-
+newsCrawlFromDate = '2017-07-10'
+testSetFromDate = '2017-07-11'
+getPageCount = 5
+article_list = list()
 
 news = NateNews()
-article_list = news.crawl()
+news.crawl()
 # print('article_list : ', article_list)
 Training()
 

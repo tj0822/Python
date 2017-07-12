@@ -49,7 +49,7 @@ c_KTOP30 = [
 target = ("035720" , 0 ,"카카오")
 
 #input day
-toDate = "2017-06-21"
+toDate = "2017-05-20"
 
 #count data getting
 dataCount = 250000
@@ -77,6 +77,7 @@ def GetPriceData(item, mode = "part", data = None):
             break
         soup = BeautifulSoup(source_code.text,"lxml")
         # print(idx)
+        # print(soup.find('td', class_='pgRR').find('a'))
         for tr in filter(lambda x:x.get("onmouseout") is not None, soup.find_all("tr")):
 
             if tr.find("span",class_ = "tah p10 gray03") is None:
@@ -101,12 +102,16 @@ def GetPriceData(item, mode = "part", data = None):
                 sIdx += 1
                 amount = float(cPrice[sIdx].text.replace("," ,""))
 
-                datetimeList.append(dt)
-                closePriceList.append(pClose)
-                startPriceList.append(pStart)
-                minPriceList.append(pMin)
-                maxPriceList.append(pMax)
-                amountList.append(amount)
+                if(datetimeList.__contains__(dt)):
+                    bBool = False
+                    break
+                else:
+                    datetimeList.append(dt)
+                    closePriceList.append(pClose)
+                    startPriceList.append(pStart)
+                    minPriceList.append(pMin)
+                    maxPriceList.append(pMax)
+                    amountList.append(amount)
         idx += 1
         
     if mode == "part" :
@@ -152,12 +157,16 @@ def GetPriceData(item, mode = "part", data = None):
 
 
 # target = ("000660" , 0 ,"하이닉스")
+# target = ("096770" , 0 ,"SK이노베이션")
+# target = ("115960" , 0 ,"연우")
 data = GetPriceData(target,"all")
 
 
+l = list(data.index.get_values())
 
-print(target['datetime'])
 
 # outFileName = "data/" + target[2] + "(" + target[0] + ")_" +datetime.now().strftime("%Y%m%d%H%M%S")+ ".csv"
-# data.to_csv(outFileName)
+
+outFileName = 'data/' + target[2] + '_' + str(min(l))[0:10].replace('-', '') + '~' + str(max(l))[0:10].replace('-', '') + '.csv'
+data.to_csv(outFileName)
 
