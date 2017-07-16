@@ -137,51 +137,54 @@ def getWords(wordList):
 def scoring(newsList):
     print('Scoring')
     for article in newsList:
-        content, issueDateTime = get_content(article['link'])
-        issueDateTime = pd.to_datetime(issueDateTime)
-        issueDate = issueDateTime.date()
-        issueTime = issueDateTime.time()
-        wordList = getWords(kkma.pos(content))
-        wordList = list(wordList)
+        # print(article)
+        try:
+            content, issueDateTime = get_content(article['link'])
+            issueDateTime = pd.to_datetime(issueDateTime)
+            issueDate = issueDateTime.date()
+            issueTime = issueDateTime.time()
+            wordList = getWords(kkma.pos(content))
+            wordList = list(wordList)
 
-        ws = set(wordList)
-        dic = {}
-        for word in ws:
-            dic.update({word: wordList.count(word)})
+            ws = set(wordList)
+            dic = {}
+            for word in ws:
+                dic.update({word: wordList.count(word)})
 
-        n = 10
-        listDic = sorted(dic.items(), key=operator.itemgetter(1), reverse=True)[:n]
-        # print('listDic : ', listDic)
-        # wordList.clear()
+            n = 10
+            listDic = sorted(dic.items(), key=operator.itemgetter(1), reverse=True)[:n]
+            # print('listDic : ', listDic)
+            # wordList.clear()
 
-        topNWordList = list()
-        for l in listDic:
-            topNWordList.append(l[0])
+            topNWordList = list()
+            for l in listDic:
+                topNWordList.append(l[0])
 
-        if issueTime >= pd.to_datetime('15:30:00').time():
-            baseDate = stockDF[pd.to_datetime(stockDF['datetime']) > issueDate].head(1)['datetime']
-        else:
-            baseDate = stockDF[pd.to_datetime(stockDF['datetime']) >= issueDate].head(1)['datetime']
-
-        # print('issueDate : ', issueDate)
-        if issueDate >= pd.to_datetime(testSetFromDate).date() or len(baseDate) == 0:
-            # test set
-            # print('testSet')
-            testSet.append({'issueDateTime': issueDateTime, 'wordList': topNWordList})
-        else:
-            # trainning set
-            baseDate = pd.Series(baseDate).values[0]
-            trainingSet.append({'issueDateTime': issueDateTime, 'wordList': topNWordList})
-            todayPrice = int(stockDF[pd.to_datetime(stockDF['datetime']) == baseDate]['close'])
-            prevPrice = int(stockDF[pd.to_datetime(stockDF['datetime']) < baseDate].tail(1)['close'])
-            if (todayPrice > prevPrice):
-                classList.append(1)
+            if issueTime >= pd.to_datetime('15:30:00').time():
+                baseDate = stockDF[pd.to_datetime(stockDF['datetime']) > issueDate].head(1)['datetime']
             else:
-                if (todayPrice < prevPrice):
-                    classList.append(0)
-                else:
-                    classList.append(0)
+                baseDate = stockDF[pd.to_datetime(stockDF['datetime']) >= issueDate].head(1)['datetime']
 
+            # print('issueDate : ', issueDate)
+            if issueDate >= pd.to_datetime(testSetFromDate).date() or len(baseDate) == 0:
+                # test set
+                # print('testSet')
+                testSet.append({'issueDateTime': issueDateTime, 'wordList': topNWordList})
+            else:
+                # trainning set
+                baseDate = pd.Series(baseDate).values[0]
+                trainingSet.append({'issueDateTime': issueDateTime, 'wordList': topNWordList})
+                todayPrice = int(stockDF[pd.to_datetime(stockDF['datetime']) == baseDate]['close'])
+                prevPrice = int(stockDF[pd.to_datetime(stockDF['datetime']) < baseDate].tail(1)['close'])
+                if (todayPrice > prevPrice):
+                    classList.append(1)
+                else:
+                    if (todayPrice < prevPrice):
+                        classList.append(0)
+                    else:
+                        classList.append(0)
+        except:
+            continue
 
 def Test():
     vocaList = nb.createVocabList(trainingSet)
