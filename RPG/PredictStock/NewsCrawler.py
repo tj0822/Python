@@ -57,7 +57,6 @@ class NateNews:
     #     #        print('Changed : ' + item_changed)
     #     return list
 
-
     def get_article(self, category, base_url, date, page):
         list = []
         target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
@@ -83,6 +82,7 @@ class NateNews:
         #        print('Source : ' + item_source)
         #        print('Changed : ' + item_changed)
         return list
+
 
     def get_article_generator(self, category, base_url, date, page):
         target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
@@ -432,7 +432,7 @@ stockDF = Stock().getStockData
 keyword = '카카오'
 newsCrawlFromDate = '2017-07-10'
 testSetFromDate = '2017-07-11'
-getPageCount = 5
+getPageCount = 300
 article_list = list()
 
 news = NateNews()
@@ -440,4 +440,4 @@ news.crawl()
 # print('article_list : ', article_list)
 Training()
 
-Test()
+# Test()
