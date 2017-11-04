@@ -21,17 +21,17 @@ from os.path import isfile, join
 
 seedmoney = 10000000
 targetPeriod = 1
-targetProfitRate = 1.0333
+targetProfitRate = 1.0233
 
-stockDirectory = 'data/2017-09-22/'
+stockDirectory = 'data/2017-11-04/'
 stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
 
-portfolio = {'093370'}
+portfolio = {'014820'}
 fromSimulDate = datetime.datetime.strptime('2013-01-01', "%Y-%m-%d").date()
 toSimulDate = datetime.datetime.strptime('2014-01-01', "%Y-%m-%d").date()
 
 for fileName in stockFiles:
-    if(portfolio.__contains__(fileName[:fileName.index('_')])):
+    # if(portfolio.__contains__(fileName[:fileName.index('_')])):
         stockDF = pd.read_csv(stockDirectory + fileName).sort(['datetime'])
 
         successCnt = 0
@@ -41,6 +41,9 @@ for fileName in stockFiles:
         cash = seedmoney
         stockValue = 0
 
+        bInit = True
+        initPrice = 0  # 연초 최초 구입가격
+        initStockCnt = 0
 
         for i in range(1, len(stockDF)):
             yesterdayDatetime = datetime.datetime.strptime(stockDF[i - 1:i]['datetime'].values[0], "%Y-%m-%d").date()
@@ -57,41 +60,47 @@ for fileName in stockFiles:
             todayHigh = int(stockDF[i:i+1]['high'])
             todayVolume = int(stockDF[i:i+1]['volume'])
 
-            if todayDatetime >= fromSimulDate :
-                if todayDatetime <= toSimulDate :
-                    if stockCnt == 0:
-                        if(todayOpen < todayClose
-                            and todayOpen < yesterdayOpen
-                            and todayOpen < yesterdayClose
-                            and todayClose > yesterdayOpen
-                            and todayClose > yesterdayClose
-                           ):
+            if todayDatetime >= fromSimulDate and (yesterdayVolume * todayVolume) > 0:
+                if bInit:
+                    initPrice = yesterdayClose      # 연초 최초 구입가격
+                    initStockCnt = int(cash / yesterdayClose)
+                    # print(todayDatetime, ' ', initPrice, ' ', initStockCnt)
+                    bInit = False
+                else :
+                    if todayDatetime <= toSimulDate:
+                        if stockCnt == 0:
+                            if(todayOpen < todayClose
+                                and todayOpen < yesterdayOpen
+                                and todayOpen < yesterdayClose
+                               ):
 
-                            buyCnt = int(cash / todayClose)
-                            stockCnt = stockCnt + buyCnt
+                                buyCnt = int(cash / todayClose)
+                                stockCnt = stockCnt + buyCnt
 
-                            cash = cash - (todayClose * buyCnt)
-                            stockValue = todayClose * stockCnt
-                            # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
+                                cash = cash - (todayClose * buyCnt)
+                                stockValue = todayClose * stockCnt
+                                # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
+                            else:
+                                continue
                         else:
-                            continue
+                            if(todayHigh >= yesterdayClose * targetProfitRate):
+                                sellPrice = int(yesterdayClose * targetProfitRate)
+                                # print('(성공) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
+                                successCnt = successCnt + 1
+                                cash = cash + sellPrice * stockCnt
+                                stockCnt = 0
+                            else:
+                                sellPrice = todayClose
+                                # print('(실패) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
+                                failCnt = failCnt + 1
+                                cash = cash + todayClose * stockCnt
+                                stockCnt = 0
                     else:
-                        if(todayHigh >= yesterdayClose * targetProfitRate):
-                            sellPrice = int(yesterdayClose * targetProfitRate)
-                            print('(성공) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
-                            successCnt = successCnt + 1
-                            cash = cash + sellPrice * stockCnt
-                            stockCnt = 0
-                        else:
-                            sellPrice = todayClose
-                            print('(실패) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
-                            failCnt = failCnt + 1
-                            cash = cash + todayClose * stockCnt
-                            stockCnt = 0
-                else:
-                    totalValue = cash + todayClose * stockCnt
-                    print(fileName, ' - 성공 : ', successCnt, ' 실패 : ', failCnt, ' 현금 : ', cash, ' 수량 : ', stockCnt,' 종가 : ', todayClose, ' 총자산 : ', totalValue, ' 수익률 : ',(totalValue - seedmoney) / seedmoney * 100)
-                    break;
+                        totalValue = cash + todayClose * stockCnt
+                        #print(fileName, ' - 성공 : ', successCnt, ' 실패 : ', failCnt, '정산일 : ', todayDatetime, ' 현금 : ', cash, ' 수량 : ', stockCnt,' 종가 : ', todayClose, ' 총자산 : ', totalValue, ' 수익률 : ',(totalValue - seedmoney) / seedmoney * 100)
+                        # print('연초 구매수량 : ', initStockCnt)
+                        print(fileName, '정산일 : ', todayDatetime, ' 총자산 : ', totalValue, ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose*initStockCnt - seedmoney) / seedmoney * 100)
+                        break;
 
 
 

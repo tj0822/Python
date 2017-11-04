@@ -34,8 +34,8 @@ def GetKospi200():
 
 
 stockDict = GetKospi200()
-print(stockDict)
+# print(stockDict)
 stockCodeList = list(stockDict.keys())
-print(stockCodeList)
+# print(stockCodeList)
 # stockNameList = list(stockDict.values())
 

@@ -47,7 +47,7 @@ c_KTOP30 = [
 ,("161390" , 1 ,"한국타이어"   )
 ]
 
-favoriteStocks = {'000660', '035720', '034220', }
+favoriteStocks = {'KOSPI'}
 #target code (current code = kakao)
 # target = ("000660" , 0 ,"SK하이닉스")
 
@@ -58,7 +58,11 @@ def GetPriceData(item, mode = "part", data = None):
     shift = item[1]
     name = item[2]
     header = code + "_" + str(shift)
-    url = "http://finance.naver.com/item/sise_day.nhn?code=" + code
+    if code == 'KOSPI':
+        url = "http://finance.naver.com/item/sise_index_day.nhn?code=" + code
+    else :
+        url = "http://finance.naver.com/item/sise_day.nhn?code=" + code
+
     page = "&page="
     idx = 1
     datetimeList = []
@@ -146,14 +150,16 @@ def GetPriceData(item, mode = "part", data = None):
  
 
 stockDict = stock.GetKospi200()
+# stockDict['KOSPI'] = 'KOSPI'    # 코스피 강제 추가
 
 crawlDate = str(datetime.now())[:10]
 print(crawlDate)
 directory = 'data/' + crawlDate
 
+
 for key in stockDict.keys():
     if favoriteStocks.__contains__(key):
-        print(key, ' : ', stockDict[key])
+    #     print(key, ' : ', stockDict[key])
         data = GetPriceData((key, 0 ,stockDict[key]),"all")
 
         if not os.path.exists(directory):
