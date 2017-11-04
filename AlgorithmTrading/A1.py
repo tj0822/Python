@@ -15,6 +15,7 @@
 
 import pandas as pd
 import datetime
+import csv
 
 from os import listdir
 from os.path import isfile, join
@@ -29,6 +30,9 @@ stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, 
 portfolio = {'014820'}
 fromSimulDate = datetime.datetime.strptime('2013-01-01', "%Y-%m-%d").date()
 toSimulDate = datetime.datetime.strptime('2014-01-01', "%Y-%m-%d").date()
+
+f = open('output.csv', 'w', encoding='utf-8', newline='')
+wr = csv.writer(f)
 
 for fileName in stockFiles:
     # if(portfolio.__contains__(fileName[:fileName.index('_')])):
@@ -99,9 +103,13 @@ for fileName in stockFiles:
                         totalValue = cash + todayClose * stockCnt
                         #print(fileName, ' - 성공 : ', successCnt, ' 실패 : ', failCnt, '정산일 : ', todayDatetime, ' 현금 : ', cash, ' 수량 : ', stockCnt,' 종가 : ', todayClose, ' 총자산 : ', totalValue, ' 수익률 : ',(totalValue - seedmoney) / seedmoney * 100)
                         # print('연초 구매수량 : ', initStockCnt)
+
+                        wr.writerow([fileName, todayDatetime, totalValue, (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
+
                         print(fileName, '정산일 : ', todayDatetime, ' 총자산 : ', totalValue, ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose*initStockCnt - seedmoney) / seedmoney * 100)
                         break;
 
+f.close()
 
 
 '''       
