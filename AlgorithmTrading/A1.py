@@ -28,10 +28,12 @@ stockDirectory = 'data/2017-11-04/'
 stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
 
 portfolio = {'014820'}
-fromSimulDate = datetime.datetime.strptime('2013-01-01', "%Y-%m-%d").date()
-toSimulDate = datetime.datetime.strptime('2014-01-01', "%Y-%m-%d").date()
+fromSimulYear = '2013'
+toSimulYear = '2014'
+fromSimulDate = datetime.datetime.strptime(fromSimulYear + '-01-01', "%Y-%m-%d").date()
+toSimulDate = datetime.datetime.strptime(toSimulYear + '-01-01', "%Y-%m-%d").date()
 
-f = open('output.csv', 'w', encoding='utf-8', newline='')
+f = open('output_' + fromSimulYear + '~' + toSimulYear + '.csv', 'w', encoding='utf-8', newline='')
 wr = csv.writer(f)
 
 for fileName in stockFiles:
