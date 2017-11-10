@@ -20,99 +20,121 @@ import csv
 from os import listdir
 from os.path import isfile, join
 
+# seedmoney = 10000000
+# targetPeriod = 1
+# targetProfit = 0.01
+# targetProfitRate = 1.0033 + targetProfit
+#
 seedmoney = 10000000
-targetPeriod = 1
-targetProfitRate = 1.0233
-
 stockDirectory = 'data/2017-11-04/'
-stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
+# portfolio = {'014820'}
+#
+# fromSimulYear = '2015'
+# toSimulYear = '2016'
+# fromSimulDate = datetime.datetime.strptime(fromSimulYear + '-01-01', "%Y-%m-%d").date()
+# toSimulDate = datetime.datetime.strptime(toSimulYear + '-01-01', "%Y-%m-%d").date()
 
-portfolio = {'014820'}
-fromSimulYear = '2013'
-toSimulYear = '2014'
-fromSimulDate = datetime.datetime.strptime(fromSimulYear + '-01-01', "%Y-%m-%d").date()
-toSimulDate = datetime.datetime.strptime(toSimulYear + '-01-01', "%Y-%m-%d").date()
+def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
+    targetProfitRate = 1.0033 + targetProfit
+    stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
+    fromSimulDate = datetime.datetime.strptime(str(fromSimulYear) + '-01-01', "%Y-%m-%d").date()
+    toSimulDate = datetime.datetime.strptime((str(toSimulYear) + '-01-01'), "%Y-%m-%d").date()
 
-f = open('output_' + fromSimulYear + '~' + toSimulYear + '.csv', 'w', encoding='utf-8', newline='')
+
+
+    for fileName in stockFiles:
+        # if(portfolio.__contains__(fileName[:fileName.index('_')])):
+            stockDF = pd.read_csv(stockDirectory + fileName).sort(['datetime'])
+
+            successCnt = 0
+            failCnt = 0
+            totalProfit = 0
+            stockCnt = 0
+            cash = seedmoney
+            stockValue = 0
+
+            bInit = True
+            initPrice = 0  # 연초 최초 구입가격
+            initStockCnt = 0
+
+            for i in range(2, len(stockDF)):
+                before2dayDatetime = datetime.datetime.strptime(stockDF[i - 2:i - 1]['datetime'].values[0], "%Y-%m-%d").date()
+                before2dayOpen = int(stockDF[i - 2:i-1]['open'])
+                before2dayClose = int(stockDF[i - 2:i-1]['close'])
+                before2dayLow = int(stockDF[i - 2:i-1]['low'])
+                before2dayHigh = int(stockDF[i - 2:i-1]['high'])
+                yesterdayVolume = int(stockDF[i - 2:i-1]['volume'])
+
+                yesterdayDatetime = datetime.datetime.strptime(stockDF[i - 1:i]['datetime'].values[0], "%Y-%m-%d").date()
+                yesterdayOpen = int(stockDF[i-1:i]['open'])
+                yesterdayClose = int(stockDF[i-1:i]['close'])
+                yesterdayLow = int(stockDF[i-1:i]['low'])
+                yesterdayHigh = int(stockDF[i-1:i]['high'])
+                yesterdayVolume = int(stockDF[i-1:i]['volume'])
+
+                todayDatetime = datetime.datetime.strptime(stockDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date()
+                todayOpen = int(stockDF[i:i+1]['open'])
+                todayClose = int(stockDF[i:i+1]['close'])
+                todayLow = int(stockDF[i:i+1]['low'])
+                todayHigh = int(stockDF[i:i+1]['high'])
+                todayVolume = int(stockDF[i:i+1]['volume'])
+
+                if todayDatetime >= fromSimulDate and (yesterdayVolume * todayVolume) > 0:
+                    if bInit:
+                        initPrice = todayClose      # 연초 최초 구입가격
+                        initStockCnt = int(cash / todayClose)
+                        # print(todayDatetime, ' ', initPrice, ' ', initStockCnt)
+                        bInit = False
+                    else :
+                        if todayDatetime <= toSimulDate:
+                            if stockCnt == 0:
+                                if(before2dayClose >= before2dayOpen * 1.05
+                                    and yesterdayClose < yesterdayOpen
+                                    and yesterdayClose > before2dayOpen
+                                    and todayOpen < todayClose
+                                    and todayOpen < yesterdayOpen
+                                   ):
+
+                                    buyCnt = int(cash / todayClose)
+                                    stockCnt = stockCnt + buyCnt
+
+                                    cash = cash - (todayClose * buyCnt)
+                                    stockValue = todayClose * stockCnt
+                                    # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
+                                else:
+                                    continue
+                            else:
+                                if(todayHigh >= yesterdayClose * targetProfitRate):
+                                    sellPrice = int(yesterdayClose * targetProfitRate)
+                                    # print('(성공) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
+                                    successCnt = successCnt + 1
+                                    cash = cash + sellPrice * stockCnt
+                                    stockCnt = 0
+                                else:
+                                    sellPrice = todayClose
+                                    # print('(실패) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
+                                    failCnt = failCnt + 1
+                                    cash = cash + todayClose * stockCnt
+                                    stockCnt = 0
+                        else:
+                            totalValue = cash + todayClose * stockCnt
+                            #print(fileName, ' - 성공 : ', successCnt, ' 실패 : ', failCnt, '정산일 : ', todayDatetime, ' 현금 : ', cash, ' 수량 : ', stockCnt,' 종가 : ', todayClose, ' 총자산 : ', totalValue, ' 수익률 : ',(totalValue - seedmoney) / seedmoney * 100)
+                            # print('연초 구매수량 : ', initStockCnt)
+
+                            wr.writerow([fileName, fromSimulYear, str(successCnt+failCnt), str(targetProfit), totalValue, (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
+
+                            print(fileName, '투자년도 : ', fromSimulYear, '거래 횟수 : ', successCnt+failCnt, ' 총자산 : ', totalValue, ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose*initStockCnt - seedmoney) / seedmoney * 100)
+                            break;
+
+
+f = open('output_' + str(datetime.datetime.now())[:10] + '.csv', 'w', newline='')
 wr = csv.writer(f)
 
-for fileName in stockFiles:
-    # if(portfolio.__contains__(fileName[:fileName.index('_')])):
-        stockDF = pd.read_csv(stockDirectory + fileName).sort(['datetime'])
-
-        successCnt = 0
-        failCnt = 0
-        totalProfit = 0
-        stockCnt = 0
-        cash = seedmoney
-        stockValue = 0
-
-        bInit = True
-        initPrice = 0  # 연초 최초 구입가격
-        initStockCnt = 0
-
-        for i in range(1, len(stockDF)):
-            yesterdayDatetime = datetime.datetime.strptime(stockDF[i - 1:i]['datetime'].values[0], "%Y-%m-%d").date()
-            yesterdayOpen = int(stockDF[i-1:i]['open'])
-            yesterdayClose = int(stockDF[i-1:i]['close'])
-            yesterdayLow = int(stockDF[i-1:i]['low'])
-            yesterdayHigh = int(stockDF[i-1:i]['high'])
-            yesterdayVolume = int(stockDF[i-1:i]['volume'])
-
-            todayDatetime = datetime.datetime.strptime(stockDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date()
-            todayOpen = int(stockDF[i:i+1]['open'])
-            todayClose = int(stockDF[i:i+1]['close'])
-            todayLow = int(stockDF[i:i+1]['low'])
-            todayHigh = int(stockDF[i:i+1]['high'])
-            todayVolume = int(stockDF[i:i+1]['volume'])
-
-            if todayDatetime >= fromSimulDate and (yesterdayVolume * todayVolume) > 0:
-                if bInit:
-                    initPrice = yesterdayClose      # 연초 최초 구입가격
-                    initStockCnt = int(cash / yesterdayClose)
-                    # print(todayDatetime, ' ', initPrice, ' ', initStockCnt)
-                    bInit = False
-                else :
-                    if todayDatetime <= toSimulDate:
-                        if stockCnt == 0:
-                            if(todayOpen < todayClose
-                                and todayOpen < yesterdayOpen
-                                and todayOpen < yesterdayClose
-                               ):
-
-                                buyCnt = int(cash / todayClose)
-                                stockCnt = stockCnt + buyCnt
-
-                                cash = cash - (todayClose * buyCnt)
-                                stockValue = todayClose * stockCnt
-                                # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
-                            else:
-                                continue
-                        else:
-                            if(todayHigh >= yesterdayClose * targetProfitRate):
-                                sellPrice = int(yesterdayClose * targetProfitRate)
-                                # print('(성공) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
-                                successCnt = successCnt + 1
-                                cash = cash + sellPrice * stockCnt
-                                stockCnt = 0
-                            else:
-                                sellPrice = todayClose
-                                # print('(실패) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
-                                failCnt = failCnt + 1
-                                cash = cash + todayClose * stockCnt
-                                stockCnt = 0
-                    else:
-                        totalValue = cash + todayClose * stockCnt
-                        #print(fileName, ' - 성공 : ', successCnt, ' 실패 : ', failCnt, '정산일 : ', todayDatetime, ' 현금 : ', cash, ' 수량 : ', stockCnt,' 종가 : ', todayClose, ' 총자산 : ', totalValue, ' 수익률 : ',(totalValue - seedmoney) / seedmoney * 100)
-                        # print('연초 구매수량 : ', initStockCnt)
-
-                        wr.writerow([fileName, todayDatetime, totalValue, (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
-
-                        print(fileName, '정산일 : ', todayDatetime, ' 총자산 : ', totalValue, ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose*initStockCnt - seedmoney) / seedmoney * 100)
-                        break;
+for year in range(2010, 2017):
+    for targetProfit in range(1, 6, 1):
+        Simulator(fromSimulYear=year, toSimulYear=year+1, targetProfit=targetProfit/100)
 
 f.close()
-
 
 '''       
             if(datetime.datetime.strptime(stockDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date() >= fromStartDate
