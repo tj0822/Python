@@ -21,13 +21,13 @@ from os import listdir
 from os.path import isfile, join
 
 # seedmoney = 10000000
-# targetPeriod = 1
+targetPeriod = 3
 # targetProfit = 0.01
 # targetProfitRate = 1.0033 + targetProfit
 #
 seedmoney = 10000000
 stockDirectory = 'data/2017-11-04/'
-# portfolio = {'014820'}
+portfolio = {'000030'}
 #
 # fromSimulYear = '2015'
 # toSimulYear = '2016'
@@ -88,13 +88,18 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                     else :
                         if todayDatetime <= toSimulDate:
                             if stockCnt == 0:
-                                if(before2dayClose >= before2dayOpen * 1.05
-                                    and yesterdayClose < yesterdayOpen
-                                    and yesterdayClose > before2dayOpen
-                                    and todayOpen < todayClose
+                                # if(before2dayClose >= before2dayOpen * 1.05
+                                #     and yesterdayClose < yesterdayOpen
+                                #     and yesterdayClose > before2dayOpen
+                                #     and todayOpen < todayClose
+                                #     and todayOpen < yesterdayOpen
+                                #    ):
+                                if (todayOpen < yesterdayClose
                                     and todayOpen < yesterdayOpen
-                                   ):
-
+                                    and todayOpen < todayClose
+                                    and todayClose > yesterdayOpen
+                                    and todayClose > yesterdayClose
+                                    ):
                                     buyCnt = int(cash / todayClose)
                                     stockCnt = stockCnt + buyCnt
 
@@ -104,12 +109,14 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                 else:
                                     continue
                             else:
-                                if(todayHigh >= yesterdayClose * targetProfitRate):
-                                    sellPrice = int(yesterdayClose * targetProfitRate)
-                                    # print('(성공) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
-                                    successCnt = successCnt + 1
-                                    cash = cash + sellPrice * stockCnt
-                                    stockCnt = 0
+                                for j in range(0, targetPeriod):
+                                    if(int(stockDF[i+j:i+1+j]['high']) >= yesterdayClose * targetProfitRate):
+                                        sellPrice = int(yesterdayClose * targetProfitRate)
+                                        # print('(성공) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', j+1, '거래일', ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
+                                        successCnt = successCnt + 1
+                                        cash = cash + sellPrice * stockCnt
+                                        stockCnt = 0
+                                        break
                                 else:
                                     sellPrice = todayClose
                                     # print('(실패) 매수가 : ', yesterdayClose, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-yesterdayClose) * stockCnt)
@@ -123,17 +130,17 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
 
                             wr.writerow([fileName, fromSimulYear, str(successCnt+failCnt), str(targetProfit), totalValue, (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
 
-                            print(fileName, '투자년도 : ', fromSimulYear, '거래 횟수 : ', successCnt+failCnt, ' 총자산 : ', totalValue, ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose*initStockCnt - seedmoney) / seedmoney * 100)
+                            print(fileName, '투자년도 : ', fromSimulYear, '거래 횟수 : ', successCnt+failCnt, '목표수익률 : ', str(targetProfit),' 총자산 : ', totalValue, ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose*initStockCnt - seedmoney) / seedmoney * 100)
                             break;
 
 
 f = open('output_' + str(datetime.datetime.now())[:10] + '.csv', 'w', newline='')
 wr = csv.writer(f)
 
-for year in range(2010, 2017):
+for year in range(2000, 2017):
     for targetProfit in range(1, 6, 1):
         Simulator(fromSimulYear=year, toSimulYear=year+1, targetProfit=targetProfit/100)
-
+f
 f.close()
 
 '''       
