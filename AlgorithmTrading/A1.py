@@ -148,8 +148,8 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
 f = open('output_' + str(datetime.datetime.now())[:10] + '.csv', 'w', newline='')
 wr = csv.writer(f)
 
-for year in range(2016, 2017, 1):
-    for targetProfit in range(1, 2, 1):
+for year in range(2010, 2017, 1):
+    for targetProfit in range(1, 6, 1):
         Simulator(fromSimulYear=year, toSimulYear=year+1, targetProfit=targetProfit/100)
 f
 f.close()
