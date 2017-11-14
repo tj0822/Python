@@ -93,19 +93,26 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                     else :
                         if todayDatetime <= toSimulDate:
                             if stockCnt == 0:
-                                if(before2dayClose >= before2dayOpen * 1.05
-                                    and yesterdayClose < yesterdayOpen
-                                    and yesterdayClose > before2dayOpen
-                                    and todayOpen < todayClose
-                                    and todayOpen < yesterdayOpen
-                                    and todayClose < yesterdayClose
-                                   ):
-                                # if (todayOpen < yesterdayClose
-                                #     and todayOpen < yesterdayOpen
+                                #L1
+                                # if(before2dayClose >= before2dayOpen * 1.05
+                                #     and yesterdayClose < yesterdayOpen
+                                #     and yesterdayClose > before2dayOpen
+                                #     and yesterdayOpen < before2dayClose
                                 #     and todayOpen < todayClose
-                                #     and todayClose > yesterdayOpen
-                                #     and todayClose > yesterdayClose
-                                #     ):
+                                #     and todayOpen < yesterdayOpen
+                                #     and todayClose < yesterdayClose
+                                #    ):
+
+                                #L2
+                                if (todayOpen < yesterdayClose
+                                    and todayOpen < yesterdayOpen
+                                    and yesterdayOpen > yesterdayClose
+                                    and todayOpen < todayClose
+                                    and todayClose < yesterdayOpen
+                                    and todayClose < yesterdayClose
+                                    and (todayHigh-todayClose) < (todayOpen-todayLow)
+                                    # and (todayClose-todayOpen) > (todayOpen-todayLow)
+                                    ):
                                     tempBuyPrice = todayClose
                                     if todayClose < 10000:
                                         tempTargetPrice = math.ceil(tempBuyPrice * targetProfitRate / 10) * 10
@@ -119,20 +126,20 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                     cash = cash - (todayClose * buyCnt)
                                     stockValue = todayClose * stockCnt
                                     # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
-                                    print('매수일자 : ',  todayDatetime, ' 매수가격 : ', tempBuyPrice, ' 목표가격 : ', tempTargetPrice)
+                                    # print('매수일자 : ',  todayDatetime, ' 매수가격 : ', tempBuyPrice, ' 목표가격 : ', tempTargetPrice)
                                 else:
                                     continue
                             else:
                                 if (todayHigh >= tempTargetPrice):
                                     sellPrice = tempTargetPrice
-                                    print('(성공) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt,' 매도일자 : ', tempCnt, '거래일', ' 차액 : ', (sellPrice - tempBuyPrice))
+                                    # print('(성공) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt,' 매도일자 : ', tempCnt, '거래일', ' 차액 : ', (sellPrice - tempBuyPrice))
                                     successCnt = successCnt + 1
                                     cash = cash + sellPrice * stockCnt
                                     stockCnt = 0
                                 else:
                                     if(tempCnt == targetPeriod):
                                         sellPrice = todayClose
-                                        print('(실패) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-tempBuyPrice))
+                                        # print('(실패) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-tempBuyPrice))
                                         failCnt = failCnt + 1
                                         cash = cash + todayClose * stockCnt
                                         stockCnt = 0
