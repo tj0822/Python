@@ -1,16 +1,14 @@
 #-*- coding:utf-8 -*-
 
 '''
-	· 제목 : 갭하락 양봉
+	· 제목 : 52주 신저가
 	· 매매 시점 : 장 마감 직전 종가
-	· 목표 기간 : 2일
-	· 목표 수익률 : 2%
+	· 목표 기간 : 3개월
+	· 목표 수익률 : 10%
 	· 목표 승률 : 80%
 	· 알고리즘 상세
-	1) 갭하락 양봉 패턴 찾기 : 당일 종가는 전날 저가보다 높지 않아야 함
-	2) 당일 장 마감 직전에 종가로 매수
-	3) 다음날 장 초반에 매수가의 2%수익에 매도 시도
-	4) 2일후에 매도되지 않으면 무조건 시가 매도
+	1) 오늘 가격이 직전 52주 신저가인지 확인
+	2)
 '''
 
 import pandas as pd
@@ -22,8 +20,8 @@ from os import listdir
 from os.path import isfile, join
 
 # seedmoney = 10000000
-targetPeriod = 20
-# targetProfit = 0.01
+targetPeriod = 60
+targetProfit = 0.1
 # targetProfitRate = 1.0033 + targetProfit
 #
 seedmoney = 10000000
@@ -40,8 +38,6 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
     stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
     fromSimulDate = datetime.datetime.strptime(str(fromSimulYear) + '-01-01', "%Y-%m-%d").date()
     toSimulDate = datetime.datetime.strptime((str(toSimulYear) + '-01-01'), "%Y-%m-%d").date()
-
-
 
     for fileName in stockFiles:
         # if(portfolio.__contains__(fileName[:fileName.index('_')])):
@@ -63,32 +59,12 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
             tempTargetPrice = 0
 
             for i in range(2, len(stockDF)):
-                # before2dayDatetime = datetime.datetime.strptime(stockDF[i - 2:i - 1]['datetime'].values[0], "%Y-%m-%d").date()
-                # before2dayOpen = int(stockDF[i - 2:i-1]['open'])
-                # before2dayClose = int(stockDF[i - 2:i-1]['close'])
-                # before2dayLow = int(stockDF[i - 2:i-1]['low'])
-                # before2dayHigh = int(stockDF[i - 2:i-1]['high'])
-                # yesterdayVolume = int(stockDF[i - 2:i-1]['volume'])
-                #
-                # yesterdayDatetime = datetime.datetime.strptime(stockDF[i - 1:i]['datetime'].values[0], "%Y-%m-%d").date()
-                # yesterdayOpen = int(stockDF[i-1:i]['open'])
-                # yesterdayClose = int(stockDF[i-1:i]['close'])
-                # yesterdayLow = int(stockDF[i-1:i]['low'])
-                # yesterdayHigh = int(stockDF[i-1:i]['high'])
-                # yesterdayVolume = int(stockDF[i-1:i]['volume'])
-
                 todayDatetime = datetime.datetime.strptime(stockDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date()
                 todayOpen = int(stockDF[i:i+1]['open'])
                 todayClose = int(stockDF[i:i+1]['close'])
                 todayLow = int(stockDF[i:i+1]['low'])
                 todayHigh = int(stockDF[i:i+1]['high'])
                 todayVolume = int(stockDF[i:i+1]['volume'])
-
-                ma5 = sum(stockDF[i - 5 + 1:i + 1]['close']) / 5
-                ma10 = sum(stockDF[i - 10 + 1:i + 1]['close']) / 10
-                ma20 = sum(stockDF[i - 20 + 1:i + 1]['close']) / 20
-                ma60 = sum(stockDF[i - 60 + 1:i + 1]['close']) / 60
-                ma120 = sum(stockDF[i - 120 + 1:i + 1]['close']) / 120
 
                 if todayDatetime >= fromSimulDate and (int(stockDF[i-1:i]['volume']) * todayVolume) > 0:
                     if bInit:
@@ -99,39 +75,8 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                     else :
                         if todayDatetime <= toSimulDate:
                             if stockCnt == 0:
-                                #L1
-                                # if(before2dayClose >= before2dayOpen * 1.05
-                                #     and yesterdayClose < yesterdayOpen
-                                #     and yesterdayClose > before2dayOpen
-                                #     and yesterdayOpen < before2dayClose
-                                #     and todayOpen < todayClose
-                                #     and todayOpen < yesterdayOpen
-                                #     and todayClose < yesterdayClose
-                                #    ):
 
-                                # L2
-                                # if (todayOpen < int(stockDF[i-1:i]['close'])
-                                #     and todayOpen < int(stockDF[i-1:i]['open'])
-                                #     and int(stockDF[i-1:i]['open']) > int(stockDF[i-1:i]['close'])
-                                #     and todayOpen < todayClose
-                                #     and todayClose < int(stockDF[i-1:i]['open'])
-                                #     and todayClose < int(stockDF[i-1:i]['close'])
-                                #     and (todayHigh - todayClose) < (todayOpen - todayLow)
-                                #     and (todayClose-todayOpen) > (todayOpen-todayLow)
-                                #     ):
-
-                                # L3
-                                if (todayOpen < int(stockDF[i-1:i]['close'])
-                                    and todayOpen < int(stockDF[i-1:i]['open'])
-                                    and todayClose < int(stockDF[i-1:i]['close'])
-                                    and todayClose < int(stockDF[i-1:i]['open'])
-                                    and todayOpen < todayClose
-                                    and ma5 > ma10
-                                    and ma10 > ma20
-                                    and ma20 > ma60
-                                    and ma60 > ma120
-                                    ):
-
+                                if len(list(stockDF[i-240:i]['close'])) > 0 and (todayClose < min(list(stockDF[i-240:i]['close']))):
                                     tempBuyPrice = todayClose
                                     if todayClose < 10000:
                                         tempTargetPrice = math.ceil(tempBuyPrice * targetProfitRate / 10) * 10
@@ -146,14 +91,14 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                     stockValue = todayClose * stockCnt
                                     # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
                                     print('매수일자 : ',  todayDatetime, ' 매수가격 : ', tempBuyPrice, ' 목표가격 : ', tempTargetPrice)
-                                    wr.writerow([todayDatetime, 'buy', fileName.split('_')[0], fileName.split('_')[1].split('.')[0], tempBuyPrice])
+                                    # wr.writerow([todayDatetime, 'buy', fileName.split('_')[0], fileName.split('_')[1].split('.')[0], tempBuyPrice])
                                 else:
                                     continue
                             else:
                                 if (todayHigh >= tempTargetPrice):
                                     sellPrice = tempTargetPrice
                                     print('(성공) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt,' 매도일자 : ', tempCnt, '거래일', ' 차액 : ', (sellPrice - tempBuyPrice))
-                                    wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
+                                    # wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
                                     successCnt = successCnt + 1
                                     cash = cash + sellPrice * stockCnt
                                     stockCnt = 0
@@ -161,7 +106,7 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                     if(tempCnt == targetPeriod):
                                         sellPrice = todayClose
                                         print('(실패) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-tempBuyPrice))
-                                        wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
+                                        # wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
                                         failCnt = failCnt + 1
                                         cash = cash + todayClose * stockCnt
                                         stockCnt = 0
@@ -171,22 +116,22 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                         continue
                         else:
                             totalValue = cash + todayClose * stockCnt
-                            # print(fileName, ' - 성공 : ', successCnt, ' 실패 : ', failCnt, '정산일 : ', todayDatetime, ' 현금 : ', cash, ' 수량 : ', stockCnt,' 종가 : ', todayClose, ' 총자산 : ', totalValue, ' 수익률 : ',(totalValue - seedmoney) / seedmoney * 100)
-                            # print('연초 구매수량 : ', initStockCnt)
 
                             if successCnt+failCnt > 0:
-                                # wr.writerow([fileName.split('_')[0], fileName.split('_')[1].split('.')[0], fromSimulYear, str(successCnt+failCnt), str(targetProfit), (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
+                                wr.writerow([fileName.split('_')[0], fileName.split('_')[1].split('.')[0], fromSimulYear, str(successCnt), str(failCnt), str(targetProfit), (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
                                 print(fileName.split('_')[0], ' ', fileName.split('_')[1].split('.')[0], ' 투자년도 : ', fromSimulYear, '거래 횟수 : ', successCnt + failCnt, '목표수익률 : ', str(targetProfit), ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose * initStockCnt - seedmoney) / seedmoney * 100)
 
                             break;
 
 
-f = open('output_' + str(datetime.datetime.now())[:10] + '.csv', 'w', newline='')
+f = open('output_' + str(datetime.datetime.now())[:10] + '_A3.csv', 'w', newline='')
 wr = csv.writer(f)
 
-for year in range(2016, 2017, 1):
-    for targetProfit in range(2, 3, 1):
-        Simulator(fromSimulYear=year, toSimulYear=year+1, targetProfit=targetProfit/100)
+# for year in range(2010, 2017, 1):
+#     for targetProfit in range(10, 11, 1):
+#         Simulator(fromSimulYear=year, toSimulYear=year+1, targetProfit=targetProfit/100)
+
+Simulator(fromSimulYear=2000, toSimulYear=2017, targetProfit=targetProfit)
 
 f.close()
 
