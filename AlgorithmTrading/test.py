@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
-import math
 
-a = 12345
+n = [2800.0, 2700.0, 2680.0, 2560.0, 2605.0, 2650.0]
 
-print(math.ceil(a/100) * 100)
+print(n)
+print(type(n))
+print(min(n))

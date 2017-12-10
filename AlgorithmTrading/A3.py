@@ -23,6 +23,7 @@ from os.path import isfile, join
 targetPeriod = 60
 targetProfit = 0.1
 # targetProfitRate = 1.0033 + targetProfit
+
 #
 seedmoney = 10000000
 stockDirectory = 'data/2017-11-04/'
@@ -75,7 +76,7 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                     else :
                         if todayDatetime <= toSimulDate:
                             if stockCnt == 0:
-
+                                # 매수
                                 if len(list(stockDF[i-240:i]['close'])) > 0 and (todayClose < min(list(stockDF[i-240:i]['close']))):
                                     tempBuyPrice = todayClose
                                     if todayClose < 10000:
@@ -91,14 +92,15 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                     stockValue = todayClose * stockCnt
                                     # print('현금 : ', cash, ' 주식가치 : ', stockValue, ' total value : ', cash+stockValue)
                                     print('매수일자 : ',  todayDatetime, ' 매수가격 : ', tempBuyPrice, ' 목표가격 : ', tempTargetPrice)
-                                    # wr.writerow([todayDatetime, 'buy', fileName.split('_')[0], fileName.split('_')[1].split('.')[0], tempBuyPrice])
+                                    wr.writerow([todayDatetime, 'buy', fileName.split('_')[0], fileName.split('_')[1].split('.')[0], tempBuyPrice])
                                 else:
                                     continue
                             else:
+                                # 매도
                                 if (todayHigh >= tempTargetPrice):
                                     sellPrice = tempTargetPrice
                                     print('(성공) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt,' 매도일자 : ', tempCnt, '거래일', ' 차액 : ', (sellPrice - tempBuyPrice))
-                                    # wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
+                                    wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
                                     successCnt = successCnt + 1
                                     cash = cash + sellPrice * stockCnt
                                     stockCnt = 0
@@ -106,7 +108,7 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                                     if(tempCnt == targetPeriod):
                                         sellPrice = todayClose
                                         print('(실패) 매수가 : ', tempBuyPrice, '매도가 : ', sellPrice, '수량 : ', stockCnt, ' 매도일자 : ', todayDatetime, ' 차액 : ', (sellPrice-tempBuyPrice))
-                                        # wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
+                                        wr.writerow([todayDatetime, 'sell', fileName.split('_')[0],fileName.split('_')[1].split('.')[0], sellPrice])
                                         failCnt = failCnt + 1
                                         cash = cash + todayClose * stockCnt
                                         stockCnt = 0
@@ -118,7 +120,7 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
                             totalValue = cash + todayClose * stockCnt
 
                             if successCnt+failCnt > 0:
-                                wr.writerow([fileName.split('_')[0], fileName.split('_')[1].split('.')[0], fromSimulYear, str(successCnt), str(failCnt), str(targetProfit), (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
+                                # wr.writerow([fileName.split('_')[0], fileName.split('_')[1].split('.')[0], fromSimulYear, str(successCnt), str(failCnt), str(targetProfit), (totalValue - seedmoney) / seedmoney * 100, (todayClose*initStockCnt - seedmoney) / seedmoney * 100])
                                 print(fileName.split('_')[0], ' ', fileName.split('_')[1].split('.')[0], ' 투자년도 : ', fromSimulYear, '거래 횟수 : ', successCnt + failCnt, '목표수익률 : ', str(targetProfit), ' 수익률 : ', (totalValue - seedmoney) / seedmoney * 100, ' vs 연초 대비 수익률 : ', (todayClose * initStockCnt - seedmoney) / seedmoney * 100)
 
                             break;
@@ -126,6 +128,7 @@ def Simulator(fromSimulYear=2010, toSimulYear = 2011, targetProfit = 0.01):
 
 f = open('output_' + str(datetime.datetime.now())[:10] + '_A3.csv', 'w', newline='')
 wr = csv.writer(f)
+wr.writerow(['날짜', '거래유형', '종목코드', '종목명', '거래가격'])
 
 # for year in range(2010, 2017, 1):
 #     for targetProfit in range(10, 11, 1):
