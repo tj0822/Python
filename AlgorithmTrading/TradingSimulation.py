@@ -7,7 +7,8 @@ import datetime
 
 stockDirectory = 'data/2017-11-04/'
 
-result = pd.read_csv('output_2017-12-06_A3_from2010.csv', dtype={'종목코드': str}).sort(['날짜'])
+result = pd.read_csv('output_2017-12-10_A3.csv', dtype={'종목코드': str}).sort(['날짜'])
+
 totalValue = 0
 
 unitPrice = 1000000     #주식거래 단위 금액
@@ -20,11 +21,11 @@ toSimulDate = datetime.datetime.strptime((str(2016) + '-01-01'), "%Y-%m-%d").dat
 # result[result[datetime.datetime.strptime(result['날짜'], "%Y-%m-%d").date()] <= toSimulDate]
 lastTradeDate = max(result['날짜'])
 
-
+print(lastTradeDate)
 
 for i in range(0, result.__len__()):
     date = result['날짜'][i]
-    sellOrBuy = result['거래구분'][i]
+    sellOrBuy = result['거래유형'][i]
     stockCode = result['종목코드'][i]
     stockName = result['종목명'][i]
     tradePrice = result['거래가격'][i]
