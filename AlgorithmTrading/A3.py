@@ -134,7 +134,7 @@ wr.writerow(['날짜', '거래유형', '종목코드', '종목명', '거래가�
 #     for targetProfit in range(10, 11, 1):
 #         Simulator(fromSimulYear=year, toSimulYear=year+1, targetProfit=targetProfit/100)
 
-Simulator(fromSimulYear=2000, toSimulYear=2017, targetProfit=targetProfit)
+Simulator(fromSimulYear=1980, toSimulYear=2017, targetProfit=targetProfit)
 
 f.close()
 
