@@ -13,7 +13,7 @@ result = pd.read_csv(outputFileName, dtype={'종목코드': str}).sort(['날짜'
 result = result.reset_index(drop=True)
 result['날짜'] = pd.to_datetime(result['날짜'], format="%Y-%m-%d")
 
-seedMoney = 20000000
+seedMoney = 30000000
 
 
 unitPrice = 1000000     #주식거래 단위 금액
@@ -42,7 +42,7 @@ def GetStockValue(portfolio, date):
 
 f = open('simulation_' + outputFileName, 'w', newline='')
 wr = csv.writer(f)
-wr.writerow(['날짜', '주식가치', '현금자산', '총자산'])
+wr.writerow(['날짜', '거래유형', '종목코드', '거래가격', '거래수량', '주식가치', '현금자산', '총자산'])
 
 for i in range(0, result.__len__()):
     date = result['날짜'][i]
@@ -54,27 +54,32 @@ for i in range(0, result.__len__()):
     if sellOrBuy == 'buy':
         # 매수
         stockCount = int(min([unitPrice, seedMoney]) / tradePrice)
-        portfolio[stockCode] = stockCount
-        inputMoney = stockCount * tradePrice
-        seedMoney -= inputMoney
+        if stockCount > 0:
+            portfolio[stockCode] = stockCount
+            inputMoney = stockCount * tradePrice
+            seedMoney -= inputMoney
+        else :
+            continue
         # print('잔고 : ', seedMoney)
         # print(currentCashValue)
         # print(portfolio)
     elif sellOrBuy == 'sell':
         # 매도
-        stockCount = portfolio[stockCode]
-        del portfolio[stockCode]
-        outComeMoney = stockCount * tradePrice
-        seedMoney += outComeMoney
+        if portfolio.__contains__(stockCode):
+            stockCount = portfolio[stockCode]
+            outComeMoney = stockCount * tradePrice
+            seedMoney += outComeMoney
+            del portfolio[stockCode]
+
         # print('잔고 : ', seedMoney)
         # print(currentCashValue)
         # print(portfolio)
 
     stockValue = GetStockValue(portfolio, date)
     totalValue = seedMoney + stockValue
-    print('날짜 : ', date, ' 주식가치 : ', stockValue, ' 현금자산 : ', seedMoney, ' 총자산 : ', totalValue)
+    print('날짜 : ', str(date)[:10], '거래유형 : ', sellOrBuy, ' 종목코드 : ', stockCode, ' 거래가격 : ', tradePrice, ' 거래수량 : ', stockCount, ' 주식가치 : ', stockValue, ' 현금자산 : ', seedMoney, ' 총자산 : ', totalValue)
 
-    wr.writerow([date, stockValue, seedMoney, totalValue])
+    wr.writerow([str(date)[:10], sellOrBuy, stockCode, tradePrice, stockCount, stockValue, seedMoney, totalValue])
 
 
 f.close()
