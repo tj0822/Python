@@ -4,12 +4,17 @@ import pandas as pd
 from os import listdir
 from os.path import isfile, join
 import datetime
+import csv
 
 stockDirectory = 'data/2017-11-04/'
 
-result = pd.read_csv('output_2017-12-10_A3.csv', dtype={'종목코드': str}).sort(['날짜'])
+outputFileName = 'output_2017-12-10_A3.csv'
+result = pd.read_csv(outputFileName, dtype={'종목코드': str}).sort(['날짜'])
+result = result.reset_index(drop=True)
+result['날짜'] = pd.to_datetime(result['날짜'], format="%Y-%m-%d")
 
-totalValue = 0
+seedMoney = 20000000
+
 
 unitPrice = 1000000     #주식거래 단위 금액
 currentValue = 0
@@ -21,7 +26,23 @@ toSimulDate = datetime.datetime.strptime((str(2016) + '-01-01'), "%Y-%m-%d").dat
 # result[result[datetime.datetime.strptime(result['날짜'], "%Y-%m-%d").date()] <= toSimulDate]
 lastTradeDate = max(result['날짜'])
 
-print(lastTradeDate)
+def GetStockValue(portfolio, date):
+    currentStockValue = 0
+    for key, value in portfolio.items():
+        stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
+        for fileName in stockFiles:
+            if fileName.split('_')[0] == key:
+                portfolioStock = pd.read_csv(stockDirectory + fileName)
+                portfolioStock['datetime'] = pd.to_datetime(portfolioStock['datetime'], format="%Y-%m-%d")
+                # 가끔 거래 정지등으로 해당일자에 실적이 없을때 가장 최근 가격으로 사용함
+                currentStockValue += int(portfolioStock[portfolioStock['datetime'] == max(portfolioStock[portfolioStock['datetime'] <= date]['datetime'])]['close']) * value
+
+    # print(date, ' 주식 총 가치 : ',  currentStockValue)
+    return currentStockValue
+
+f = open('simulation_' + outputFileName, 'w', newline='')
+wr = csv.writer(f)
+wr.writerow(['날짜', '주식가치', '현금자산', '총자산'])
 
 for i in range(0, result.__len__()):
     date = result['날짜'][i]
@@ -32,35 +53,28 @@ for i in range(0, result.__len__()):
 
     if sellOrBuy == 'buy':
         # 매수
-        stockCount = int(unitPrice / tradePrice)
+        stockCount = int(min([unitPrice, seedMoney]) / tradePrice)
         portfolio[stockCode] = stockCount
-        currentValue -= stockCount * tradePrice
+        inputMoney = stockCount * tradePrice
+        seedMoney -= inputMoney
+        # print('잔고 : ', seedMoney)
         # print(currentCashValue)
         # print(portfolio)
     elif sellOrBuy == 'sell':
         # 매도
         stockCount = portfolio[stockCode]
         del portfolio[stockCode]
-        currentValue += stockCount * tradePrice
+        outComeMoney = stockCount * tradePrice
+        seedMoney += outComeMoney
+        # print('잔고 : ', seedMoney)
         # print(currentCashValue)
         # print(portfolio)
 
-    for key, value in portfolio.items():
-        stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
-        for fileName in stockFiles:
-            if fileName.split('_')[0] == key:
-                portfolioStock = pd.read_csv(stockDirectory + fileName)
-                currentValue += int(portfolioStock[portfolioStock['datetime'] == date]['close']) * value
-                print(currentValue)
+    stockValue = GetStockValue(portfolio, date)
+    totalValue = seedMoney + stockValue
+    print('날짜 : ', date, ' 주식가치 : ', stockValue, ' 현금자산 : ', seedMoney, ' 총자산 : ', totalValue)
 
-# else:
-#     for key, value in portfolio.items():
-#         stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
-#         for fileName in stockFiles:
-#             if fileName.split('_')[0] == key:
-#                 portfolioStock = pd.read_csv(stockDirectory + fileName)
-#                 currentValue += int(portfolioStock[portfolioStock['datetime'] == lastTradeDate]['close']) * value
-#                 print(currentValue)
+    wr.writerow([date, stockValue, seedMoney, totalValue])
 
 
-
+f.close()
