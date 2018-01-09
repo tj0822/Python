@@ -2,7 +2,7 @@
 {
 "url" : "https://gateway.aibril-watson.kr/natural-language-understanding/api",
 "username" : "7457e1d2-26a8-4b82-8f4d-782ad438ac10",
-"password" : "ZSZ5Wmt8zRUA" 
+"password" : "ZSZ5Wmt8zRUA"
 }
 '''
 import json
@@ -24,10 +24,10 @@ class News:
 
         base_url = "http://news.nate.com"
         category = "eco"
-        date = datetime.datetime.strptime('2018-01-08', "%Y-%m-%d").date()
+        date = datetime.datetime.strptime('2018-01-01', "%Y-%m-%d").date()
         lastDate = datetime.date.today()
 
-        getPageCount = 10
+        getPageCount = 300
 
         article_cnt = 0
         article_list = list()
