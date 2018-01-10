@@ -32,8 +32,8 @@ class MakeDecision:
             # hold
             return 0
 
-# 3. 거래 로그 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
-class TradingSimulation:
+# 3. 거래 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
+class Trading:
     def Simulation(stock = None, seedMoney = 1000000, fromDate='2016-01-01', toDate='2016-12-31', algorithmNumber = 0):
         fromSimulDate = datetime.datetime.strptime(str(fromDate), "%Y-%m-%d").date()
         toSimulDate = datetime.datetime.strptime((str(toDate)), "%Y-%m-%d").date()
@@ -85,15 +85,15 @@ class TradingSimulation:
                               '총자산:', stockValue+cashValue)
 
 
-
-# 5. 성과 분석
+# 4. 성과 분석
 '''
 input 파라미터 : 종목코드, 초기자본, 시뮬레이션 기간, 알고리즘 코드
 '''
 portfolio = SelectStocks.GetPortfolio(None)
 for stock in portfolio:
-    TradingSimulation.Simulation(stock = stock,
-                                 seedMoney = 1000000,
-                                 fromDate = '2017-01-01',
-                                 toDate = '2017-12-31',
-                                 algorithmNumber = 0)
+    Trading.Simulation(stock = stock,
+                        seedMoney = 1000000,
+                        fromDate = '2017-01-01',
+                        toDate = '2017-12-31',
+                        algorithmNumber = 0)
+
