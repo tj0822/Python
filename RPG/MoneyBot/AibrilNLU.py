@@ -19,6 +19,7 @@ def getScore(stockName, date):
     stockNewsList = News.crawl(stockName=stockName, date=date)
     decisionScore = 0
     for news in stockNewsList:
+        # print(news)
         contentText, issueDatetime = News.get_content(news['link'])
         if contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
             returnValue = response(contentText=contentText, targets=stockName)

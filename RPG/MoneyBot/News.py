@@ -19,7 +19,7 @@ def crawl(stockName):
     date = datetime.datetime.strptime('2018-01-01', "%Y-%m-%d").date()
     lastDate = datetime.date.today()
 
-    getPageCount = 30
+    getPageCount = 10
 
     article_cnt = 0
     article_list = list()
