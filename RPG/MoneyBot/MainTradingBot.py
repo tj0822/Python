@@ -9,6 +9,10 @@ import RPG.MoneyBot.AibrilNLU as alu
 import RPG.MoneyBot.Stock as Stock
 import csv
 import numpy as np
+import sys
+sys._enablelegacywindowsfsencoding()
+
+
 
 stockDirectory = 'data/2017-11-04/'
 # stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
@@ -22,8 +26,8 @@ class SelectStocks:
 # 2. 일자별 의사결정: 매수/매도/Holding
 class MakeDecision:
     # -1: sell 0:stay 1:buy
-    def Decision(stockName, date):
-        return alu.getScore(stockName, date)
+    def Decision(stock, date):
+        return alu.getScore(stock, kospiList[stock], date)
 
 # 3. 거래 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
 class Trading:
@@ -38,7 +42,7 @@ class Trading:
             date = datetime.datetime.strptime(stockPriceDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date()
             volume = int(stockPriceDF[i:i + 1]['volume'])
             if date >= fromSimulDate and (int(stockPriceDF[i - 1:i]['volume']) * volume) > 0 and date <= toSimulDate:
-                descisionScore = MakeDecision.Decision(kospiList[stock], date)
+                descisionScore = MakeDecision.Decision(stock, date)
                 # open = int(stockPriceDF[i:i + 1]['open'])
                 close = int(stockPriceDF[i:i + 1]['close'])
                 # low = int(stockPriceDF[i:i + 1]['low'])
@@ -79,7 +83,7 @@ input 파라미터 : 종목코드, 초기자본, 시뮬레이션 기간, 알고�
 
 portfolio = SelectStocks.GetPortfolio(None)
 
-f = open('../RPG/MoneyBot/output/' + str(datetime.datetime.now()) + '.csv', 'w', newline='')
+f = open('output/' + str(datetime.date.today()) + '.csv', 'w', newline='')
 wr = csv.writer(f)
 wr.writerow(['날짜', 'score', '거래유형', '종목코드', '종목명', '거래가격', '거래수량', '주식가치', '현금자산', '총자산'])
 

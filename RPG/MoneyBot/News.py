@@ -73,7 +73,7 @@ def crawl(stockName, date):
     base_url = "http://news.nate.com"
     category = "eco"
 
-    getPageCount = 10
+    getPageCount = 300
 
     article_cnt = 0
     article_list = list()
