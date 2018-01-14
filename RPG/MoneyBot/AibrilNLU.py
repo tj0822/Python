@@ -44,21 +44,15 @@ def perdelta(start, end, delta):
         yield curr
         curr += delta
 
-
-
-kospiList= Stock.GetKospi200()
-
-# sql.insertStmt()
-
-
 '''
 코스피 200종목 뉴스에 대한 AIBRIL score migration
 '''
-fromDate = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d").date()
-toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
-for stockCode in kospiList.keys():
-    # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
-    for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
-        getScore(stockCode, kospiList[stockCode], d)
+# kospiList= Stock.GetKospi200()
+# fromDate = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d").date()
+# toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
+# for stockCode in kospiList.keys():
+#     # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
+#     for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+#         getScore(stockCode, kospiList[stockCode], d)
 
 
