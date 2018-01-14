@@ -59,7 +59,7 @@ class Trading:
                 stockValue = close * stockCnt
 
                 # 4. 거래 이력 output
-                wr.writerow([date, descisionScore, np.sign(descisionScore), stock, kospiList[stock], close, tradeCnt,stockValue, cashValue, (stockValue + cashValue)])
+                wr.writerow([date, descisionScore, np.sign(descisionScore), stock, kospiList[stock], close, tradeCnt, stockValue, cashValue, (stockValue + cashValue)])
                 print('날짜:', date,
                       'score:', descisionScore,
                       '거래유형:', np.sign(descisionScore),
@@ -86,8 +86,8 @@ wr.writerow(['날짜', 'score', '거래유형', '종목코드', '종목명', '�
 for stock in portfolio:
     Trading.Simulation(stock = stock,
                         seedMoney = 1000000,
-                        fromDate = '2016-01-01',
-                        toDate = '2017-12-31',
+                        fromDate = '2017-01-01',
+                        toDate = '2017-01-31',
                         algorithmNumber = 0)
 
 f.close()
