@@ -14,6 +14,7 @@ sys._enablelegacywindowsfsencoding()
 
 
 
+
 stockDirectory = 'data/2017-11-04/'
 # stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
 kospiList= Stock.GetKospi200()

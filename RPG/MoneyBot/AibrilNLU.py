@@ -14,8 +14,10 @@ def response(contentText='', targets=None):
         username='7457e1d2-26a8-4b82-8f4d-782ad438ac10',
         password='ZSZ5Wmt8zRUA',
         version='2017-02-27')
-
-    return natural_language_understanding.analyze(text=contentText, features=Features(sentiment=SentimentOptions(targets=[targets])))
+    try:
+        return natural_language_understanding.analyze(text=contentText, features=Features(sentiment=SentimentOptions(targets=[targets])))
+    except:
+        return None
 
 def getScore(stockCode, stockName, date):
     stockNewsList = News.crawl(stockName=stockName, date=date)
@@ -25,12 +27,13 @@ def getScore(stockCode, stockName, date):
         contentText, issueDatetime = News.get_content(news['link'])
         if contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
             returnValue = response(contentText=contentText, targets=stockName)
-            print(returnValue)
-
+            # print(returnValue)
+            if returnValue == None:
+                return 0.0;
             targetsScore = float(returnValue['sentiment']['targets'][0]['score'])
             documentScore = float(returnValue['sentiment']['document']['score'])
-            query = "insert into aibril_alu(STOCK_CODE, url, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', %d, %f, %f) " % (stockCode, news['link'], int(returnValue['usage']['text_characters']), targetsScore, documentScore)
-            sql.insertStmt(query=query)
+            query = "insert into aibril_alu(STOCK_CODE, url, issueDatetime, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', '%s', %d, %f, %f) " % (stockCode, news['link'], str(issueDatetime), int(returnValue['usage']['text_characters']), targetsScore, documentScore)
+            sql.insertStmt(conn, query=query)
 
             decisionScore += (targetsScore + documentScore)/2
 
@@ -45,20 +48,21 @@ def perdelta(start, end, delta):
         curr += delta
 
 
-
-kospiList= Stock.GetKospi200()
-
-# sql.insertStmt()
-
-
 '''
 코스피 200종목 뉴스에 대한 AIBRIL score migration
 '''
-fromDate = datetime.datetime.strptime('2000-01-01', "%Y-%m-%d").date()
+import mysql.connector
+kospiList= Stock.GetKospi200()
+conn = mysql.connector.connect(user='python', password='python',
+                              host='13.124.46.173',
+                              database='stock')
+fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
 toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
 for stockCode in kospiList.keys():
     # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
     for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+        print(d, stockCode, kospiList[stockCode])
         getScore(stockCode, kospiList[stockCode], d)
+        conn.commit()
 
-
+conn.close()

@@ -30,4 +30,8 @@ def insertStmt(query = None):
     cnx.close()
 
 
+def insertStmt(conn = None, query = None):
+    cursor = conn.cursor()
+    rtn = cursor.execute(query)
+    cursor.close()
 
