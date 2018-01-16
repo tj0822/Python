@@ -114,12 +114,13 @@ def crawl(stockName, date):
 
 
 def get_content(url):
-    # print(url)
     soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
     # print(soup.prettify())
     content = soup.find(id="articleView")
     body = soup.find(id="realArtcContents")
-    # print(body)
+    if body is None:
+        return None, None
+
     # 제목
     # title = soup.find(id="articleSubecjt")
     # print(url)
@@ -152,3 +153,6 @@ def get_content(url):
         return con, issueDatetime
     except:
         pass
+
+
+get_content('http://news.nate.com/view/20090112n04500?mid=n0301')

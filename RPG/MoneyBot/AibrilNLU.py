@@ -24,8 +24,9 @@ def getScore(stockCode, stockName, date):
     decisionScore = 0
     for news in stockNewsList:
         # print(news)
+
         contentText, issueDatetime = News.get_content(news['link'])
-        if contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
+        if contentText is not None and contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
             returnValue = response(contentText=contentText, targets=stockName)
             # print(returnValue)
             if returnValue == None:
@@ -56,13 +57,21 @@ kospiList= Stock.GetKospi200()
 conn = mysql.connector.connect(user='python', password='python',
                               host='13.124.46.173',
                               database='stock')
-fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
+fromDate = datetime.datetime.strptime('2009-01-13', "%Y-%m-%d").date()
 toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
 for stockCode in kospiList.keys():
     # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
-    for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
-        print(d, stockCode, kospiList[stockCode])
-        getScore(stockCode, kospiList[stockCode], d)
-        conn.commit()
+    if stockCode == '005930':
+        for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+            print(d, stockCode, kospiList[stockCode])
+            getScore(stockCode, kospiList[stockCode], d)
+            conn.commit()
+    else:
+        fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
+        toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
+        for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+            print(d, stockCode, kospiList[stockCode])
+            getScore(stockCode, kospiList[stockCode], d)
+            conn.commit()
 
 conn.close()
