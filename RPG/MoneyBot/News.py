@@ -154,5 +154,3 @@ def get_content(url):
     except:
         pass
 
-
-get_content('http://news.nate.com/view/20090112n04500?mid=n0301')
