@@ -57,7 +57,7 @@ kospiList= Stock.GetKospi200()
 conn = mysql.connector.connect(user='python', password='python',
                               host='13.124.46.173',
                               database='stock')
-fromDate = datetime.datetime.strptime('2009-01-13', "%Y-%m-%d").date()
+fromDate = datetime.datetime.strptime('2011-10-18', "%Y-%m-%d").date()
 toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
 for stockCode in kospiList.keys():
     # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
@@ -67,7 +67,7 @@ for stockCode in kospiList.keys():
             getScore(stockCode, kospiList[stockCode], d)
             conn.commit()
     else:
-        fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
+        fromDate = datetime.datetime.strptime('2017-01-01', "%Y-%m-%d").date()
         toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
         for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
             print(d, stockCode, kospiList[stockCode])
