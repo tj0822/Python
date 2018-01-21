@@ -36,8 +36,11 @@ class Trading:
             date = stockPriceDF[i:i + 1]['datetime'].values[0]
             volume = int(stockPriceDF[i:i + 1]['volume'])
             if date >= fromSimulDate and (int(stockPriceDF[i - 1:i]['volume']) * volume) > 0 and date <= toSimulDate:
+
                 # 2. 일자별 의사결정: 매수/매도/Holding
                 descisionCode, tradeRate = decision.GetAbrilALUscoreFromSQL(stock, kospiList[stock], date)
+
+
                 # open = int(stockPriceDF[i:i + 1]['open'])
                 close = int(stockPriceDF[i:i + 1]['close'])
                 # low = int(stockPriceDF[i:i + 1]['low'])
