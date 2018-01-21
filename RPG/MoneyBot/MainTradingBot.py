@@ -1,28 +1,21 @@
 #-*- coding:utf-8 -*-
 
-import random
 import pandas as pd
 import datetime
-from os import listdir
-from os.path import isfile, join
 
 import RPG.MoneyBot.Stock as Stock
 import csv
-import numpy as np
 import RPG.MoneyBot.SelctStocks as portfolio
 import RPG.MoneyBot.MakeDecision as decision
 import RPG.MoneyBot.MySQL as sql
 
 
-stockDirectory = 'data/2017-11-04/'
-# stockFiles = (f for f in listdir(stockDirectory) if isfile(join(stockDirectory, f)))
 kospiList= Stock.GetKospi200()
 
 # 1. 종목 선정
+portfolios = portfolio.getPortfolio(None)
 
-
-# 2. 일자별 의사결정: 매수/매도/Holding
-
+#
 
 # 3. 거래 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
 class Trading:
@@ -39,34 +32,32 @@ class Trading:
         stockPriceDF.columns = ['stockcode', 'datetime', 'close', 'high', 'low', 'open', 'volume']
 
         for i in range(0, len(stockPriceDF)):
-            date = datetime.datetime.strptime(stockPriceDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date()
+            # date = datetime.datetime.strptime(stockPriceDF[i:i + 1]['datetime'].values[0], "%Y-%m-%d").date()
+            date = stockPriceDF[i:i + 1]['datetime'].values[0]
             volume = int(stockPriceDF[i:i + 1]['volume'])
             if date >= fromSimulDate and (int(stockPriceDF[i - 1:i]['volume']) * volume) > 0 and date <= toSimulDate:
-                descisionScore = decision.GetAbrilALUscore(stock, kospiList[stock], date)
+                # 2. 일자별 의사결정: 매수/매도/Holding
+                descisionCode, tradeRate = decision.GetAbrilALUscoreFromSQL(stock, kospiList[stock], date)
                 # open = int(stockPriceDF[i:i + 1]['open'])
                 close = int(stockPriceDF[i:i + 1]['close'])
                 # low = int(stockPriceDF[i:i + 1]['low'])
                 # high = int(stockPriceDF[i:i + 1]['high'])
 
                 tradeCnt = 0
-
-                if descisionScore > 0 and stockCnt == 0:
-                    stockCnt = int(cashValue / close)
+                if descisionCode > 0 and stockCnt == 0:
+                    tradeCnt = int(cashValue / close * tradeRate)
+                elif descisionCode < 0 and stockCnt > 0:
                     tradeCnt = stockCnt
-                elif descisionScore == 0:
-                    tradeCnt = 0
-                elif descisionScore < 0 and stockCnt > 0:
-                    tradeCnt = stockCnt
-                    stockCnt = 0
 
-                cashValue -= close * tradeCnt * np.sign(descisionScore)
+                stockCnt += (tradeCnt * descisionCode)
+                cashValue -= close * abs(tradeCnt) * descisionCode
                 stockValue = close * stockCnt
 
                 # 4. 거래 이력 output
-                wr.writerow([date, descisionScore, np.sign(descisionScore), stock, kospiList[stock], close, tradeCnt, stockValue, cashValue, (stockValue + cashValue)])
+                # wr.writerow([date, descisionCode, stock, kospiList[stock], close, tradeCnt, stockValue, cashValue, (stockValue + cashValue)])
                 print('날짜:', date,
-                      'score:', descisionScore,
-                      '거래유형:', np.sign(descisionScore),
+                      'tradeRate:', tradeRate,
+                      '거래유형:', descisionCode,
                       '종목코드:', stock,
                       '종목명:', kospiList[stock],
                       '거래가격:', close,
@@ -75,23 +66,23 @@ class Trading:
                       '현금자산:', cashValue,
                       '총자산:', stockValue + cashValue)
 
+# f = open('/RPG/MoneyBot/output/' + str(datetime.date.today()) + '.csv', 'w', newline='')
+# wr = csv.writer(f)
+# wr.writerow(['날짜', '거래유형', '종목코드', '종목명', '거래가격', '거래수량', '주식가치', '현금자산', '총자산'])
+
+for stock in portfolios:
+    Trading.Simulation(stock=stock,
+                       seedMoney=10000000,
+                       fromDate='2017-01-01',
+                       toDate='2017-12-31',
+                       algorithmNumber=0)
+
+# f.close()
 
 # 4. 성과 분석
 '''
 input 파라미터 : 종목코드, 초기자본, 시뮬레이션 기간, 알고리즘 코드
 '''
 
-portfolios = portfolio.SelectStocks.GetPortfolio(None)
 
-f = open('output/' + str(datetime.date.today()) + '.csv', 'w', newline='')
-wr = csv.writer(f)
-wr.writerow(['날짜', 'score', '거래유형', '종목코드', '종목명', '거래가격', '거래수량', '주식가치', '현금자산', '총자산'])
 
-for stock in portfolios:
-    Trading.Simulation(stock = stock,
-                        seedMoney = 1000000,
-                        fromDate = '2017-01-01',
-                        toDate = '2017-01-31',
-                        algorithmNumber = 0)
-
-f.close()

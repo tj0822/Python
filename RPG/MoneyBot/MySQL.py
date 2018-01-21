@@ -3,10 +3,13 @@
 import mysql.connector
 import pandas as pd
 
-cnx = mysql.connector.connect(user='python', password='python',
-                              host='13.124.46.173',
-                              database='stock')
+id = 'python'
+password = 'python'
+host = '13.124.46.173'
+db ='stock'
+
 def selectStmt(query = None):
+    cnx = mysql.connector.connect(user=id, password=password, host=host, database=db)
     cursor = cnx.cursor()
 
     cursor.execute(query)
@@ -17,8 +20,9 @@ def selectStmt(query = None):
 
     return results
 
-
+#
 def insertStmt(query = None):
+    cnx = mysql.connector.connect(user=id, password=password, host=host, database=db)
     cursor = cnx.cursor()
 
     rtn = cursor.execute(query)
