@@ -32,9 +32,3 @@ def insertStmt(query = None):
 
     cursor.close()
     cnx.close()
-
-
-def insertStmt(conn = None, query = None):
-    cursor = conn.cursor()
-    rtn = cursor.execute(query)
-    cursor.close()

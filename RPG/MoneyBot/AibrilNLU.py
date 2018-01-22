@@ -34,7 +34,7 @@ def getScore(stockCode, stockName, date):
             targetsScore = float(returnValue['sentiment']['targets'][0]['score'])
             documentScore = float(returnValue['sentiment']['document']['score'])
             query = "insert into aibril_alu(STOCK_CODE, url, issueDatetime, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', '%s', %d, %f, %f) " % (stockCode, news['link'], str(issueDatetime), int(returnValue['usage']['text_characters']), targetsScore, documentScore)
-            sql.insertStmt(conn, query=query)
+            sql.insertStmt(query=query)
 
             decisionScore += (targetsScore + documentScore)/2
 

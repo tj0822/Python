@@ -2,5 +2,5 @@
 from abc import * # Abstrace Base Class
 
 #
-def getPortfolio(self):
-    return {'000660'}
+def GetPortfolio(self):
+    return {'005930'}

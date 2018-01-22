@@ -3,21 +3,29 @@
 import pandas as pd
 import datetime
 
-import RPG.MoneyBot.Stock as Stock
-import csv
+import RPG.MoneyBot.Stock as stock
 import RPG.MoneyBot.SelctStocks as portfolio
-import RPG.MoneyBot.MakeDecision as decision
-import RPG.MoneyBot.MySQL as sql
+import RPG.MoneyBot.Trade as trading
 
-
-kospiList= Stock.GetKospi200()
+kospiList= stock.GetKospi200()
 
 # 1. 종목 선정
-portfolios = portfolio.getPortfolio(None)
+portfolios = portfolio.GetPortfolio(None)
+
+# 2. 거래 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
+for stockCode in portfolios:
+    trading.Simulation(stockCode=stockCode,
+                       stockName=kospiList[stockCode],
+                       seedMoney=10000000,
+                       fromDate='2017-01-01',
+                       toDate='2017-03-31',
+                       algorithmNumber=0)
+
 
 #
 
-# 3. 거래 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
+
+'''
 class Trading:
     def Simulation(stock = None, seedMoney = 1000000, fromDate='2016-01-01', toDate='2016-12-31', algorithmNumber = 0):
         fromSimulDate = datetime.datetime.strptime(str(fromDate), "%Y-%m-%d").date()
@@ -68,17 +76,12 @@ class Trading:
                       '주식가치:', stockValue,
                       '현금자산:', cashValue,
                       '총자산:', stockValue + cashValue)
+'''
 
 # f = open('/RPG/MoneyBot/output/' + str(datetime.date.today()) + '.csv', 'w', newline='')
 # wr = csv.writer(f)
 # wr.writerow(['날짜', '거래유형', '종목코드', '종목명', '거래가격', '거래수량', '주식가치', '현금자산', '총자산'])
 
-for stock in portfolios:
-    Trading.Simulation(stock=stock,
-                       seedMoney=10000000,
-                       fromDate='2017-01-01',
-                       toDate='2017-12-31',
-                       algorithmNumber=0)
 
 # f.close()
 
