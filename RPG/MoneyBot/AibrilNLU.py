@@ -53,33 +53,54 @@ def perdelta(start, end, delta):
 코스피 200종목 뉴스에 대한 AIBRIL score migration
 '''
 import mysql.connector
-kospiList= Stock.GetKospi200()
+# kospiList= Stock.GetKospi200()
+
 conn = mysql.connector.connect(user='python', password='python',
                               host='13.124.46.173',
                               database='stock')
-fromDate = datetime.datetime.strptime('2011-10-18', "%Y-%m-%d").date()
-toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
-for stockCode in kospiList.keys():
-    # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
-    if stockCode == '005930' or stockCode == '000660':
-        pass
-        # for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
-        #     print(d, stockCode, kospiList[stockCode])
-        #     getScore(stockCode, kospiList[stockCode], d)
-        #     conn.commit()
-    elif stockCode == '005380':
-        fromDate = datetime.datetime.strptime('2017-02-22', "%Y-%m-%d").date()
-        toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
-        for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
-            print(d, stockCode, kospiList[stockCode])
-            getScore(stockCode, kospiList[stockCode], d)
-            conn.commit()
-    else:
-        fromDate = datetime.datetime.strptime('2017-01-01', "%Y-%m-%d").date()
-        toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
-        for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
-            print(d, stockCode, kospiList[stockCode])
-            getScore(stockCode, kospiList[stockCode], d)
-            conn.commit()
+
+
+# fromDate = datetime.datetime.strptime('2011-10-18', "%Y-%m-%d").date()
+# toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
+# for stockCode in kospiList.keys():
+#     # print(getScore(stock, '카카오', datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()))
+#     if stockCode == '005930' or stockCode == '000660':
+#         pass
+#         # for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+#         #     print(d, stockCode, kospiList[stockCode])
+#         #     getScore(stockCode, kospiList[stockCode], d)
+#         #     conn.commit()
+#     elif stockCode == '005380':
+#         fromDate = datetime.datetime.strptime('2017-02-22', "%Y-%m-%d").date()
+#         toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
+#         for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+#             print(d, stockCode, kospiList[stockCode])
+#             getScore(stockCode, kospiList[stockCode], d)
+#             conn.commit()
+#     else:
+#         fromDate = datetime.datetime.strptime('2017-01-01', "%Y-%m-%d").date()
+#         toDate = datetime.datetime.strptime('2018-12-01', "%Y-%m-%d").date()
+#         for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+#             print(d, stockCode, kospiList[stockCode])
+#             getScore(stockCode, kospiList[stockCode], d)
+#             conn.commit()
+#
+# conn.close()
+
+kospiList = {'004020': '현대제철', '009540': '현대중공업', '030200': 'KT'}
+fromDate = datetime.datetime.strptime('2016-01-01', "%Y-%m-%d").date()
+toDate = datetime.datetime.strptime('2016-01-31', "%Y-%m-%d").date()
+for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+    print(d)
+    newsList = News.crawlByStockNameList(list(kospiList.values()), d)
+    print(newsList)
+    for news in newsList:
+        print(news)
+        for stockCode in kospiList.keys():
+            stockName = str(kospiList[stockCode])
+            if str(news['title']).__contains__(stockName):
+                getScore(stockCode, kospiList[stockCode], d)
+
+    conn.commit()
 
 conn.close()

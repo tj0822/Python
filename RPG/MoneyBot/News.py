@@ -112,6 +112,60 @@ def crawl(stockName, date):
 
     return article_list
 
+def crawlByStockNameList(stockNameList, date):
+    def perdelta(start, end, delta):
+        curr = start
+        while curr < end:
+            yield curr
+            curr += delta
+
+    base_url = "http://news.nate.com"
+    category = "eco"
+
+    getPageCount = 300
+
+    article_cnt = 0
+    article_list = list()
+
+    # 기사 목록 추출
+    for d in perdelta(date+datetime.timedelta(days=-1), date, datetime.timedelta(days=1)):
+        for i in range(1, getPageCount):
+            target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + str(date).replace('-', '') + "&page=" + repr(i)
+            soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
+            titlebody = soup.find_all("ul")
+
+            postNoList = soup.findAll("div", {"class": "postNoList"})
+            # print('classes :', postNoList.__len__())
+            if postNoList.__len__() == 0:
+                for item in titlebody:
+                    if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
+                        continue
+                    for li_item in item.find_all("li"):
+                        try:
+                            item_title = li_item.a.contents[0].strip()
+
+                            for item in stockNameList:
+                                if item_title.__contains__(item):
+                                    item_link = base_url + li_item.a['href']
+                                    item_source = li_item.span.contents[0].strip()
+                                    article = {'title': item_title,
+                                               'link': item_link,
+                                               'item_source': item_source}
+                                    # print(article['item_link'])
+
+                                    if article_list.__contains__(article):
+                                        pass
+                                    else:
+                                        article_list.append(article)
+
+                        except:
+                            continue
+
+            else:
+                # print('기사 없음')
+                break
+
+    return [dict(t) for t in set([tuple(d.items()) for d in article_list])]
 
 def get_content(url):
     soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
