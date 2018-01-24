@@ -23,17 +23,17 @@ def getScore(stockCode, stockName, date):
     stockNewsList = News.crawl(stockName=stockName, date=date)
     decisionScore = 0
     for news in stockNewsList:
-        # print(news)
-
         contentText, issueDatetime = News.get_content(news['link'])
         if contentText is not None and contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
+            print(contentText)
             returnValue = response(contentText=contentText, targets=stockName)
-            # print(returnValue)
+            print(returnValue)
             if returnValue == None:
                 return 0.0;
             targetsScore = float(returnValue['sentiment']['targets'][0]['score'])
             documentScore = float(returnValue['sentiment']['document']['score'])
             query = "insert into aibril_alu(STOCK_CODE, url, issueDatetime, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', '%s', %d, %f, %f) " % (stockCode, news['link'], str(issueDatetime), int(returnValue['usage']['text_characters']), targetsScore, documentScore)
+            print(query)
             sql.insertStmt(query=query)
 
             decisionScore += (targetsScore + documentScore)/2
@@ -52,12 +52,12 @@ def perdelta(start, end, delta):
 '''
 코스피 200종목 뉴스에 대한 AIBRIL score migration
 '''
-import mysql.connector
-# kospiList= Stock.GetKospi200()
+# import mysql.connector
+kospiList= Stock.GetKospi200()
 
-conn = mysql.connector.connect(user='python', password='python',
-                              host='13.124.46.173',
-                              database='stock')
+# conn = mysql.connector.connect(user='python', password='python',
+#                               host='13.124.46.173',
+#                               database='stock')
 
 
 # fromDate = datetime.datetime.strptime('2011-10-18', "%Y-%m-%d").date()
@@ -87,20 +87,22 @@ conn = mysql.connector.connect(user='python', password='python',
 #
 # conn.close()
 
-kospiList = {'004020': '현대제철', '009540': '현대중공업', '030200': 'KT'}
-fromDate = datetime.datetime.strptime('2016-01-01', "%Y-%m-%d").date()
+fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
 toDate = datetime.datetime.strptime('2016-01-31', "%Y-%m-%d").date()
+
 for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
     print(d)
     newsList = News.crawlByStockNameList(list(kospiList.values()), d)
-    print(newsList)
     for news in newsList:
-        print(news)
         for stockCode in kospiList.keys():
+            if stockCode == '005930':
+                continue
+            elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
+                toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
+
             stockName = str(kospiList[stockCode])
             if str(news['title']).__contains__(stockName):
+                # print(stockName)
                 getScore(stockCode, kospiList[stockCode], d)
+    # conn.commit()
 
-    conn.commit()
-
-conn.close()

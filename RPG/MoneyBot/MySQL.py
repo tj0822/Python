@@ -32,3 +32,16 @@ def insertStmt(query = None):
 
     cursor.close()
     cnx.close()
+
+def insertStmt(query = None):
+    cnx = mysql.connector.connect(user=id, password=password, host=host, database=db)
+    cursor = cnx.cursor()
+
+    rtn = cursor.execute(query)
+
+    # Make sure data is committed to the database
+    cnx.commit()
+
+    cursor.close()
+    cnx.close()
+
