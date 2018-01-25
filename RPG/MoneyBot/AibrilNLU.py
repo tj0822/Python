@@ -28,7 +28,7 @@ def getScore(stockCode, stockName, date):
         # if contentText is not None and contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
         if contentText is not None and contentText.__contains__(stockName):
 
-            chkQuery = "SELECT news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document FROM aibril_alu WHERE url = '%s' " % news['link']
+            chkQuery = "SELECT news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document, stock_code FROM aibril_alu WHERE url = '%s' and stock_code <> '%s' LIMIT 1" % (news['link'], stockCode)
             chkResult = sql.selectStmt(chkQuery)
             if chkResult.__len__() == 0:
                 returnValue = response(contentText=contentText, targets=stockName)
@@ -101,6 +101,38 @@ kospiList= Stock.GetKospi200()
 # conn.close()
 
 # fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
+
+
+def getScoreByDate(news, stockCode, stockName):
+    contentText, issueDatetime = News.get_content(news['link'])
+    if contentText is not None and contentText.__contains__(stockName):
+
+        chkQuery = "SELECT news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document, stock_code FROM aibril_alu WHERE url = '%s' and stock_code <> '%s' LIMIT 1" % (news['link'], stockCode)
+        chkResult = sql.selectStmt(chkQuery)
+        if chkResult.__len__() == 0:
+            returnValue = response(contentText=contentText, targets=stockName)
+            if returnValue == None:
+                return 0.0
+            news_title = news['title']
+            item_source = news['item_source']
+            text_characters = int(returnValue['usage']['text_characters'])
+            targetsScore = float(returnValue['sentiment']['targets'][0]['score'])
+            documentScore = float(returnValue['sentiment']['document']['score'])
+        else:
+            news_title = chkResult[0][0]
+            item_source = chkResult[0][1]
+            issueDatetime = chkResult[0][2]
+            text_characters = int(chkResult[0][3])
+            targetsScore = float(chkResult[0][4])
+            documentScore = float(chkResult[0][5])
+
+        query = "insert into aibril_alu(STOCK_CODE, url, news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %f, %f) " % (stockCode, news['link'], str(news_title).replace("'", "''"), item_source, str(issueDatetime), text_characters, targetsScore, documentScore)
+        sql.insertStmt(query=query)
+
+
+
+
+
 fromDate = datetime.datetime.strptime('2017-01-01', "%Y-%m-%d").date()
 toDate = datetime.datetime.strptime('2018-12-31', "%Y-%m-%d").date()
 
@@ -114,8 +146,8 @@ for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
             elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
                 # toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
                 continue
-
-            stockName = str(kospiList[stockCode])
-            if str(news['title']).__contains__(stockName):
-                print(news)
-                getScore(stockCode, kospiList[stockCode], d)
+            else:
+                stockName = str(kospiList[stockCode])
+                if str(news['title']).__contains__(stockName):
+                    print(news)
+                    getScoreByDate(news, stockCode, kospiList[stockCode])
