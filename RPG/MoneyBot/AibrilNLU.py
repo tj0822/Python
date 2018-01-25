@@ -8,11 +8,12 @@ import pandas as pd
 import RPG.MoneyBot.MySQL as sql
 import RPG.MoneyBot.Stock as Stock
 
+
 def response(contentText='', targets=None):
     natural_language_understanding = NaturalLanguageUnderstandingV1(
-        url='https://gateway.aibril-watson.kr/natural-language-understanding/api',
-        username='7457e1d2-26a8-4b82-8f4d-782ad438ac10',
-        password='ZSZ5Wmt8zRUA',
+        url='https://gateway.watsonplatform.net/natural-language-understanding/api',
+        username='c6a84ec0-1e83-4b7d-bd5e-d614646dca86',
+        password='otKb7OXpjOPB',
         version='2017-02-27')
     try:
         return natural_language_understanding.analyze(text=contentText, features=Features(sentiment=SentimentOptions(targets=[targets])))
@@ -24,17 +25,16 @@ def getScore(stockCode, stockName, date):
     decisionScore = 0
     for news in stockNewsList:
         contentText, issueDatetime = News.get_content(news['link'])
-        if contentText is not None and contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
-            print(contentText)
+        # if contentText is not None and contentText.__contains__(stockName) and issueDatetime > pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1) and issueDatetime < pd.to_datetime(str(date) + ' 15:30:00'):
+        if contentText is not None and contentText.__contains__(stockName):
             returnValue = response(contentText=contentText, targets=stockName)
-            print(returnValue)
             if returnValue == None:
                 return 0.0;
             targetsScore = float(returnValue['sentiment']['targets'][0]['score'])
             documentScore = float(returnValue['sentiment']['document']['score'])
-            query = "insert into aibril_alu(STOCK_CODE, url, issueDatetime, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', '%s', %d, %f, %f) " % (stockCode, news['link'], str(issueDatetime), int(returnValue['usage']['text_characters']), targetsScore, documentScore)
-            print(query)
-            sql.insertStmt(query=query)
+            query = "insert into aibril_alu(STOCK_CODE, url, news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %f, %f) " % (stockCode, news['link'], str(news['title']).replace("'", "''"), news['item_source'], str(issueDatetime), int(returnValue['usage']['text_characters']), targetsScore, documentScore)
+
+            sql.insertStmt(conn=conn, query=query)
 
             decisionScore += (targetsScore + documentScore)/2
 
@@ -52,12 +52,12 @@ def perdelta(start, end, delta):
 '''
 코스피 200종목 뉴스에 대한 AIBRIL score migration
 '''
-# import mysql.connector
+import mysql.connector
 kospiList= Stock.GetKospi200()
 
-# conn = mysql.connector.connect(user='python', password='python',
-#                               host='13.124.46.173',
-#                               database='stock')
+conn = mysql.connector.connect(user='python', password='python',
+                              host='13.124.46.173',
+                              database='stock')
 
 
 # fromDate = datetime.datetime.strptime('2011-10-18', "%Y-%m-%d").date()
@@ -87,8 +87,9 @@ kospiList= Stock.GetKospi200()
 #
 # conn.close()
 
-fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
-toDate = datetime.datetime.strptime('2016-01-31', "%Y-%m-%d").date()
+# fromDate = datetime.datetime.strptime('2005-03-01', "%Y-%m-%d").date()
+fromDate = datetime.datetime.strptime('2017-01-01', "%Y-%m-%d").date()
+toDate = datetime.datetime.strptime('2018-12-31', "%Y-%m-%d").date()
 
 for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
     print(d)
@@ -98,11 +99,13 @@ for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
             if stockCode == '005930':
                 continue
             elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
-                toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
+                # toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
+                continue
 
             stockName = str(kospiList[stockCode])
             if str(news['title']).__contains__(stockName):
-                # print(stockName)
+                print(news)
                 getScore(stockCode, kospiList[stockCode], d)
-    # conn.commit()
+    conn.commit()
 
+conn.close()

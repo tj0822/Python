@@ -98,7 +98,7 @@ def crawl(stockName, date):
                             if str(item_title).__contains__(stockName):
                                 item_link = base_url + li_item.a['href']
                                 item_source = li_item.span.contents[0].strip()
-                                article = {'title:': item_title,
+                                article = {'title': item_title,
                                            'link': item_link,
                                            'item_source': item_source}
                                 # print(article['item_link'])
