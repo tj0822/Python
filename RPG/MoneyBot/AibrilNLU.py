@@ -10,6 +10,13 @@ import RPG.MoneyBot.Stock as Stock
 
 
 def response(contentText='', targets=None):
+    # tj0822@hotmail.com
+    # natural_language_understanding = NaturalLanguageUnderstandingV1(
+    #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
+    #     username='c6a84ec0-1e83-4b7d-bd5e-d614646dca86',
+    #     password='otKb7OXpjOPB',
+    #     version='2017-02-27')
+
     # tj820822@gmail.com
     # natural_language_understanding = NaturalLanguageUnderstandingV1(
     #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
@@ -30,6 +37,13 @@ def response(contentText='', targets=None):
         username='742a3873-b5b3-4fe6-afed-5fc07e0b0e58',
         password='XWS8s1hyoVhV',
         version='2017-02-27')
+
+    # tj0822@hanmail.net
+    # natural_language_understanding = NaturalLanguageUnderstandingV1(
+    #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
+    #     username='e5843677-a4bc-4cda-bb6b-385661a19ae8',
+    #     password='WJkgDdbXBMW2',
+    #     version='2017-02-27')
     try:
         return natural_language_understanding.analyze(text=contentText, features=Features(sentiment=SentimentOptions(targets=[targets])))
     except:
