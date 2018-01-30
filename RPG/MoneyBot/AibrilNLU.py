@@ -10,10 +10,25 @@ import RPG.MoneyBot.Stock as Stock
 
 
 def response(contentText='', targets=None):
+    # tj820822@gmail.com
+    # natural_language_understanding = NaturalLanguageUnderstandingV1(
+    #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
+    #     username='a6223f98-a1cb-4738-b33d-1ebea0a3908b',
+    #     password='gS0hVasrhobO',
+    #     version='2017-02-27')
+
+    # tj0822@naver.com
+    # natural_language_understanding = NaturalLanguageUnderstandingV1(
+    #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
+    #     username='9867d1d9-263a-4272-a397-5a34269cb0d6',
+    #     password='KikuNeCyvYzN',
+    #     version='2017-02-27')
+
+    # tj0822@daum.net
     natural_language_understanding = NaturalLanguageUnderstandingV1(
         url='https://gateway.watsonplatform.net/natural-language-understanding/api',
-        username='c6a84ec0-1e83-4b7d-bd5e-d614646dca86',
-        password='otKb7OXpjOPB',
+        username='742a3873-b5b3-4fe6-afed-5fc07e0b0e58',
+        password='XWS8s1hyoVhV',
         version='2017-02-27')
     try:
         return natural_language_understanding.analyze(text=contentText, features=Features(sentiment=SentimentOptions(targets=[targets])))
@@ -107,7 +122,8 @@ def getScoreByDate(news, stockCode, stockName):
     contentText, issueDatetime = News.get_content(news['link'])
     if contentText is not None and contentText.__contains__(stockName):
 
-        chkQuery = "SELECT news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document, stock_code FROM aibril_alu WHERE url = '%s' and stock_code <> '%s' LIMIT 1" % (news['link'], stockCode)
+        # chkQuery = "SELECT news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document, stock_code FROM aibril_alu WHERE url = '%s' and stock_code <> '%s' LIMIT 1" % (news['link'], stockCode)
+        chkQuery = "SELECT news_title, item_source, issueDatetime, text_characters, sentiment_targets, sentiment_document, stock_code FROM aibril_alu WHERE url = '%s' LIMIT 1" % (news['link'])
         chkResult = sql.selectStmt(chkQuery)
         if chkResult.__len__() == 0:
             returnValue = response(contentText=contentText, targets=stockName)
@@ -133,7 +149,7 @@ def getScoreByDate(news, stockCode, stockName):
 
 
 
-fromDate = datetime.datetime.strptime('2017-01-01', "%Y-%m-%d").date()
+fromDate = datetime.datetime.strptime('2017-02-26', "%Y-%m-%d").date()
 toDate = datetime.datetime.strptime('2018-12-31', "%Y-%m-%d").date()
 
 for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
@@ -143,9 +159,9 @@ for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
         for stockCode in kospiList.keys():
             if stockCode == '005930':
                 continue
-            elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
+            # elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
                 # toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
-                continue
+                # continue
             else:
                 stockName = str(kospiList[stockCode])
                 if str(news['title']).__contains__(stockName):
