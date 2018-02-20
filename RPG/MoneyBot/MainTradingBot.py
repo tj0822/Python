@@ -12,13 +12,15 @@ kospiList= stock.GetKospi200()
 # 1. 종목 선정
 portfolios = portfolio.GetPortfolio(None)
 
+
+
 # 2. 거래 : 날짜,거래유형,종목코드,거래가격,거래수량,주식가치,현금자산,총자산
 for stockCode in portfolios:
     trading.Simulation(stockCode=stockCode,
                        stockName=kospiList[stockCode],
                        seedMoney=10000000,
                        fromDate='2017-01-01',
-                       toDate='2017-03-31',
+                       toDate='2017-12-31',
                        algorithmNumber=0)
 
 
