@@ -25,18 +25,18 @@ def response(contentText='', targets=None):
     #     version='2017-02-27')
 
     # tj0822@naver.com
-    # natural_language_understanding = NaturalLanguageUnderstandingV1(
-    #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
-    #     username='9867d1d9-263a-4272-a397-5a34269cb0d6',
-    #     password='KikuNeCyvYzN',
-    #     version='2017-02-27')
-
-    # tj0822@daum.net
     natural_language_understanding = NaturalLanguageUnderstandingV1(
         url='https://gateway.watsonplatform.net/natural-language-understanding/api',
-        username='742a3873-b5b3-4fe6-afed-5fc07e0b0e58',
-        password='XWS8s1hyoVhV',
+        username='9867d1d9-263a-4272-a397-5a34269cb0d6',
+        password='KikuNeCyvYzN',
         version='2017-02-27')
+
+    # tj0822@daum.net
+    # natural_language_understanding = NaturalLanguageUnderstandingV1(
+    #     url='https://gateway.watsonplatform.net/natural-language-understanding/api',
+    #     username='742a3873-b5b3-4fe6-afed-5fc07e0b0e58',
+    #     password='XWS8s1hyoVhV',
+    #     version='2017-02-27')
 
     # tj0822@hanmail.net
     # natural_language_understanding = NaturalLanguageUnderstandingV1(
@@ -163,21 +163,21 @@ def getScoreByDate(news, stockCode, stockName):
 
 
 
-fromDate = datetime.datetime.strptime('2017-02-26', "%Y-%m-%d").date()
-toDate = datetime.datetime.strptime('2018-12-31', "%Y-%m-%d").date()
-
-for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
-    print(d)
-    newsList = News.crawlByStockNameList(list(kospiList.values()), d)
-    for news in newsList:
-        for stockCode in kospiList.keys():
-            if stockCode == '005930':
-                continue
-            # elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
-                # toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
-                # continue
-            else:
-                stockName = str(kospiList[stockCode])
-                if str(news['title']).__contains__(stockName):
-                    print(news)
-                    getScoreByDate(news, stockCode, kospiList[stockCode])
+# fromDate = datetime.datetime.strptime('2018-01-11', "%Y-%m-%d").date()
+# toDate = datetime.datetime.strptime('2018-12-31', "%Y-%m-%d").date()
+#
+# for d in perdelta(fromDate, toDate, datetime.timedelta(days=1)):
+#     print(d)
+#     newsList = News.crawlByStockNameList(list(kospiList.values()), d)
+#     for news in newsList:
+#         for stockCode in kospiList.keys():
+#             if stockCode == '005930':
+#                 continue
+#             # elif stockCode == '000660' or stockCode == '005380' or stockCode == '005490' or stockCode == '012330' or stockCode == '032830' or stockCode == '035420' or stockCode == '051910' or stockCode == '105560':
+#                 # toDate = datetime.datetime.strptime('2016-12-31', "%Y-%m-%d").date()
+#                 # continue
+#             else:
+#                 stockName = str(kospiList[stockCode])
+#                 if str(news['title']).__contains__(stockName):
+#                     print(news)
+#                     getScoreByDate(news, stockCode, kospiList[stockCode])
