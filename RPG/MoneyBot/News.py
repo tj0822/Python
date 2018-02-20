@@ -208,3 +208,28 @@ def get_content(url):
     except:
         pass
 
+def get_title(url):
+    soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
+    # print(soup.prettify())
+    metas = soup.find_all('meta')
+
+    for item in metas:
+        if(item.has_attr('name') and 'nate:title' in item['name']):
+            news_title = item['content']
+
+        if (item.has_attr('name') and 'nate:site_name' in item['name']):
+            item_source = item['content']
+
+    return news_title, item_source
+
+
+#  news_title, item_soruce update
+# import RPG.MoneyBot.MySQL as sql
+# query = " SELECT DISTINCT url FROM aibril_alu WHERE  news_title IS NULL OR news_title = 'None' "
+# rtn = sql.selectStmt(query)
+# for news in rtn:
+#     print(news[0])
+#     news_title, item_source = get_title(news[0])
+#     print(news_title, item_source)
+#     updateQuery = "update aibril_alu set news_title = '%s', item_source = '%s' where url = '%s' " % (str(news_title).replace("'", "''"), item_source, news[0])
+#     sql.insertStmt(updateQuery)
