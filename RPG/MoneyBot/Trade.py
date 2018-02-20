@@ -23,7 +23,7 @@ def Simulation(stockCode=None, stockName=None, seedMoney=1000000, fromDate='2017
 
             '''#########################################################################################'''
             '''일자별 의사결정: 매수/매도/Holding'''
-            descisionCode, tradeRate = decision.GetAbrilAluScoreSum(stockCode, stockName, date)         # 이부분을 코딩한 알고리즘으로 교체하면 됨(거래유형과 거래비율 결정)
+            descisionCode, tradeRate = decision.GetAbrilAluScore(stockCode, stockName, date, 0)         # 이부분을 코딩한 알고리즘으로 교체하면 됨(거래유형과 거래비율 결정)  0 : AVG, 1 : SUM
             '''#########################################################################################'''
 
             # open = int(stockPriceDF[i:i + 1]['open'])
