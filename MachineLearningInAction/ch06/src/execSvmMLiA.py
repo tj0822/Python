@@ -28,5 +28,5 @@ from numpy import *
 # reload(svmMLiA)
 # svmMLiA.testRbf()
 
-reload(svmMLiA)
+# reload(svmMLiA)
 svmMLiA.testDigits(('rbf', 20))

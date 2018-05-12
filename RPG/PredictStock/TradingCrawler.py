@@ -8,6 +8,8 @@ import pandas as pd
 from datetime import timedelta
 from datetime import datetime
 from bs4 import BeautifulSoup
+import AlgorithmTrading.Stock as stock
+import os
 
 #ktop 30 code : name
 c_KTOP30 = [
@@ -51,8 +53,6 @@ target = ("035720" , 0 ,"카카오")
 #input day
 toDate = "2017-05-20"
 
-#count data getting
-dataCount = 250000
 
 def GetPriceData(item, mode = "part", data = None):
     code = item[0]
@@ -144,29 +144,35 @@ def GetPriceData(item, mode = "part", data = None):
         df = df.set_index("datetime")
         return df
 
- 
-#target 처리  
 
 
-# data = GetPriceData(target, "part", None)
-# for item in c_KTOP30:
-#     data = GetPriceData(item, "part", data)
+
+stockDict = stock.GetKospi200()
+
+crawlDate = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day)
+print(crawlDate)
+directory = 'data/' + crawlDate
+
+for key in stockDict.keys():
+    print(key, ' : ', stockDict[key])
+    data = GetPriceData(target,"all")
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    outFileName = 'data/' + stockDict[key] + '.csv'
+    data.to_csv(outFileName)
+
+# data = GetPriceData(target,"all")
 #
-# data.to_csv("data_" +datetime.now().strftime("%Y%m%d%H%M%S")+ ".csv")
-
-
-
-# target = ("000660" , 0 ,"하이닉스")
-# target = ("096770" , 0 ,"SK이노베이션")
-# target = ("115960" , 0 ,"연우")
-data = GetPriceData(target,"all")
-
-
-l = list(data.index.get_values())
-
-
-# outFileName = "data/" + target[2] + "(" + target[0] + ")_" +datetime.now().strftime("%Y%m%d%H%M%S")+ ".csv"
-
-outFileName = 'data/' + target[2] + '_' + str(min(l))[0:10].replace('-', '') + '~' + str(max(l))[0:10].replace('-', '') + '.csv'
-data.to_csv(outFileName)
+#
+# l = list(data.index.get_values())
+#
+#
+# # outFileName = "data/" + target[2] + "(" + target[0] + ")_" +datetime.now().strftime("%Y%m%d%H%M%S")+ ".csv"
+#
+# crawlDate = str(datetime.date.today())
+#
+# outFileName = 'data/' + target[2] + '_' + str(min(l))[0:10].replace('-', '') + '~' + str(max(l))[0:10].replace('-', '') + '.csv'
+# data.to_csv(outFileName)
 

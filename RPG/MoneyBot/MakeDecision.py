@@ -1,10 +1,10 @@
 #-*- coding:utf-8 -*-
-import RPG.MoneyBot.AibrilNLU as alu
+# import RPG.MoneyBot.AibrilNLU as alu
 import random
 import RPG.MoneyBot.MySQL as sql
 import pandas as pd
 import datetime
-
+'''
 def GetAbrilALUscoreByNews(stock, stockName, date):
     score = alu.getScore(stock, stockName, date)
     decisionCode = 0
@@ -19,7 +19,7 @@ def GetAbrilALUscoreByNews(stock, stockName, date):
     tradeRate = score
 
     return decisionCode, tradeRate
-
+'''
 def GetAbrilAluSumAvg(stock, stockName, date):
     fromDate = pd.to_datetime(str(date) + ' 15:30:00') + datetime.timedelta(days=-1)
     toDate = pd.to_datetime(str(date) + ' 15:30:00')

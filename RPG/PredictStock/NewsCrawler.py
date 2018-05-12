@@ -28,35 +28,6 @@ class Stock:
 
 
 class NateNews:
-
-
-    # def get_article(self, category, base_url, base_year, date, page):
-    #     list = []
-    #     target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
-    #     # print(target_url)
-    #     soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
-    #     # print(soup.prettify())
-    #     titlebody = soup.find_all("ul")
-    #     for item in titlebody:
-    #         if (not (item.has_attr("class") and 'mduSubject' in item["class"])):
-    #             continue
-    #         for li_item in item.find_all("li"):
-    #             item_title = li_item.a.contents[0].strip()
-    #
-    #             if str(item_title).__contains__(keyword):
-    #                 # print(item_title)
-    #                 item_link = base_url + li_item.a['href']
-    #                 item_source = li_item.span.contents[0].strip()
-    #                 item_changed = time.strptime(base_year + '-' + li_item.em.contents[0], '%Y-%m-%d %H:%M')
-    #                 list.append((item_title, item_link, item_source, item_changed))
-    #
-    #             # print([item_title, item_link, item_source, item_changed])
-    #             # print('Title : ' + item_title)
-    #     # print('Link : ' + item_link)
-    #     #        print('Source : ' + item_source)
-    #     #        print('Changed : ' + item_changed)
-    #     return list
-
     def get_article(self, category, base_url, date, page):
         list = []
         target_url = base_url + "/recent?cate=" + category + "&mid=n0301&type=t&date=" + date + "&page=" + repr(page)
@@ -106,7 +77,7 @@ class NateNews:
                     yield article
 
     def get_content(url):
-        # print(url)
+        print(url)
         soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
         # print(soup.prettify())
         content = soup.find(id="articleView")

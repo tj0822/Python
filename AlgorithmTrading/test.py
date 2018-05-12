@@ -1,7 +1,14 @@
 #-*- coding:utf-8 -*-
 
-n = [2800.0, 2700.0, 2680.0, 2560.0, 2605.0, 2650.0]
+import math
+import datetime
+import pandas as pd
 
-print(n)
-print(type(n))
-print(min(n))
+date = '2017-01-01'
+yesterday = datetime.datetime.today() + datetime.timedelta(days=-1)
+print(pd.to_datetime(date + ' 15:30:00') + datetime.timedelta(days=-1))
+print(pd.to_datetime(date + ' 15:30:00'))
+
+print(pd.to_datetime(date + ' 15:30:30'))
+print(type(date))
+print(type(pd.to_datetime(date + ' 15:30:30')))
