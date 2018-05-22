@@ -1,0 +1,1 @@
+var span_result = $("#result");

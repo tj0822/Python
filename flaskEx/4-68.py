@@ -1,0 +1,1 @@
+form = RegistrationForm(formdata=None, obj=None, data={'email':'ceo@jpub.com'})

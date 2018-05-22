@@ -1,0 +1,1 @@
+>>> collection.User.find( { qty: { $lte: 20 } } )

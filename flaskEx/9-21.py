@@ -1,0 +1,1 @@
+gdhyun = Account.query(ancestor=ndb.Key("Account", 6473924464345088)).fetch()

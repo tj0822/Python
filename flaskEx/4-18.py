@@ -1,0 +1,1 @@
+>>> users.update().where(users.c.name == 'jack').values(name='ed').execute()

@@ -1,0 +1,1 @@
+simple_page = Blueprint('simple_page', __name__, static_folder='simple_static', static_url_path='/simple_static')

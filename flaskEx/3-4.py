@@ -1,0 +1,1 @@
+render_template("hello.html", name="제이펍")

@@ -1,0 +1,1 @@
+select = SelectField('SelectBox', choices=[('test_v1', 'test v1'), ('test_v2', 'test v2')])

@@ -1,0 +1,1 @@
+admin_page = Blueprint('admin_page', __name__, static_folder='blueprint/static/admin', static_url_path='/static_admin', template_folder='blueprint/template', url_prefix='/admin')

@@ -1,0 +1,1 @@
+task_result = task.wait()

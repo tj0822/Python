@@ -1,0 +1,1 @@
+form = RegistrationForm(formdata=None, obj=None, data=None, username='jiho', email='search5@search5.com')

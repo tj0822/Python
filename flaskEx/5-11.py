@@ -1,0 +1,1 @@
+simple_page = Blueprint('simple_page', __name__, template_folder='simple_templates')

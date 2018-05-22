@@ -1,0 +1,1 @@
+striptags(nl2br(my_contents))

@@ -1,0 +1,1 @@
+url_for('simple_page.show')
