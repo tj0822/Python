@@ -1,48 +1,13 @@
 #-*- coding:utf-8 -*-
 
-
-import lotto.MySQL as sql
 from numpy.random import choice
-
-
-# lotto번호 dictionary정의
-def getLottoDic(lottoHistory):
-    lottoDictByNumber = {}
-    sumDict = {}
-    for i in range(1, 46):
-        lottoDictByNumber[i] = 0
-
-    for row in lottoHistory:
-        lottoDictBySum = getSumCountDict(sum(row[1:7]), sumDict)
-
-        for i in range(1, 8):
-            lottoDictByNumber[int(row[i])] += 1
-
-    return lottoDictByNumber, lottoDictBySum
-
-# lotto당첨 이력 가져오기
-def getLottoHistory():
-    query = "SELECT series, n1, n2, n3, n4, n5, n6, bonus_n, total_winner, each_price from lotto_history"
-    result = sql.selectStmt(query)
-
-    lottoList = []
-    for row in result:
-        lottoList.append(row)
-
-    return lottoList
-
-# 회차별 당첨번호 sum count하기
-def getSumCountDict(sum, sumDict):
-    if sum in sumDict.keys():
-        sumDict[sum] += 1
-    else:
-        sumDict[sum] = 1
-
-    return sumDict
+import lotto_stistics as stistics
+import lotto_history as history
 
 
 # 번호 추천
-def getLottoNum(lottoDictBySum, lottoDictByNumber):
+'''
+def getLottoNumBySum(lottoDictByNumber, lottoDictBySum):
     # 선택할 sum 숫자수
     pickSumCount = 5
     pSumList = [x / sum(lottoDictBySum.values()) for x in lottoDictBySum.values()]
@@ -50,8 +15,18 @@ def getLottoNum(lottoDictBySum, lottoDictByNumber):
     # 확률 가중치에 의해 랜덤으로 pickSumCount만큼 추출
     pickSumList = choice(list(lottoDictBySum.keys()), pickSumCount, p=pSumList)
 
+    # 숫자를 합해서 특정 합을 만드는 숫자의 조합 구하기
+
     # 번호별 분포 확률
     pList = [x / sum(lottoDictByNumber.values()) for x in lottoDictByNumber.values()]
+
+    for n in pickSumList:
+        listNumberCombinationBySum = getNumberCombinationListBySum(n)
+        s = 0
+        for x in listNumberCombinationBySum:
+            print(x)
+            s += pList[x]
+        print(listNumberCombinationBySum, ' :', s)
 
     # 추천 번호 리스트
     pickNumberList = []
@@ -60,29 +35,97 @@ def getLottoNum(lottoDictBySum, lottoDictByNumber):
     for i in sorted(pickSumList):
         while(cnt < pickSumCount):
             pickNumber = choice(list(lottoDictByNumber.keys()), 6, p=pList)
-
             if len(set(pickNumber)) == 6:
                 if i == sum(pickNumber):
+                    print('선택 :', pickNumber)
                     cnt += 1
-                    pickNumberList.append(list(pickNumber))
+                    pickNumberList.append(sorted(list(pickNumber)))
                     break
                 else:
                     continue
 
     return pickNumberList
+'''
+
+def recommendNumberBySum(lottoDictByNumber, lottoDictBySum):
+    # 선택할 sum 숫자수
+    pickSumCount = 5
+
+    total = sum(list(lottoDictBySum.values()))
+    for key in lottoDictBySum:
+        lottoDictBySum[key] = lottoDictBySum[key] / total
+
+    pickSumList = choice(list(lottoDictBySum.keys()), pickSumCount, p=list(lottoDictBySum.values()))
+
+    total = sum(list(lottoDictByNumber.values()))
+    for key in lottoDictByNumber:
+        lottoDictByNumber[key] = lottoDictByNumber[key] / total
+
+    # 추천 번호 리스트
+    pickNumberList = []
+
+    for n in pickSumList:
+        # 합이 n인 숫자의 조합과 확률 찾기
+        listNumbers = getNumberCombinationListBySum(n)
+        pList = []
+        for numbers in listNumbers:
+            p = 0
+            for number in numbers:
+                p += lottoDictByNumber[number]
+
+            pList.append(p)
+
+        pList = [x / sum(pList) for x in pList]
+        idx = choice(list(range(0, listNumbers.__len__())), 1, p=pList)
+        pickNumberList.append(listNumbers[idx[0]])
+
+    return pickNumberList
+
+def getNumberCombinationListBySum(s):
+    l = []
+    for a in range(1, 46):
+        for b in range(a + 1, 46):
+            for c in range(b + 1, 46):
+                for d in range(c + 1, 46):
+                    for e in range(d + 1, 46):
+                        for f in range(e + 1, 46):
+                            if a + b + c + d + e + f == s:
+                                l.append([a, b, c, d, e, f])
+    return l
+
+def getLottoNumByNumberCount(lottoDictByNumber):
+    # 선택할 sum 숫자수
+    pickSumCount = 5
+
+    # 번호별 분포 확률
+    pList = [x / sum(lottoDictByNumber.values()) for x in lottoDictByNumber.values()]
+
+    # 추천 번호 리스트
+    pickNumberList = []
+
+    cnt = 0
+    while (cnt < pickSumCount):
+        pickNumber = choice(list(lottoDictByNumber.keys()), 6, p=pList)
+        if len(set(pickNumber)) == 6:
+            cnt += 1
+            pickNumberList.append(sorted(list(pickNumber)))
+        else:
+            continue
 
 
+    return pickNumberList
 
-# lotto history 가져오기
-def getRecommendNumbers():
-    lottoHistory = getLottoHistory()
+def getRecommendNumbers(lastSeries=None):
+    # lotto history 가져오기
+    if lastSeries == None:
+        lastSeries = history.getLastSeries()
+    lottoHistory = stistics.getLottoHistory(lastSeries)
 
-    lottoDictByNumber, lottoDictBySum = getLottoDic(lottoHistory)
+    # 당첨번호 통계 요약정보
+    lottoDictByNumber, lottoDictBySum = stistics.getLottoDic(lottoHistory)
 
-    pickNumberList = getLottoNum(lottoDictBySum, lottoDictByNumber)
+    pickNumberList = recommendNumberBySum(lottoDictByNumber, lottoDictBySum)
 
-    for row in pickNumberList:
-        print(row)
+    return pickNumberList
 
-    return str(pickNumberList)
 

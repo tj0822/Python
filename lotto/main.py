@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 
 from flask import Flask
-import lotto.lotto_analysis as lotto
+import lotto_analysis as lotto
 
 app = Flask(__name__)
 
@@ -11,7 +11,7 @@ def hello_world():
 
 @app.route('/lottoNumbers')
 def get_lotto():
-    return lotto.getRecommendNumbers()
+    return str(lotto.getRecommendNumbers())
 
 
 if __name__ == '__main__':

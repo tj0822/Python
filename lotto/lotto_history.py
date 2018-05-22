@@ -3,16 +3,18 @@
 from bs4 import BeautifulSoup
 import urllib.request
 import os
-import lotto.MySQL as sql
+import MySQL as sql
 
 # 로또 메인 페이지
 mainUrl = 'http://www.nlotto.co.kr/common.do?method=main'
 soup = BeautifulSoup(urllib.request.urlopen(mainUrl).read(), "lxml")
 
 # 마지막 회차 조회
-lastSeries = int(soup.find(id="lottoDrwNo").text)
+def getLastSeries(soup=soup):
+    return int(soup.find(id="lottoDrwNo").text)
 
-def GetLottoHistoryToCsv():
+def GetLottoHistoryToCsv(soup):
+    lastSeries = getLastSeries(soup)
     outputFileName = 'data/' + 'lotto_result' + '(1~' + str(lastSeries) + ')' + '.csv'
 
     if os.path.exists(outputFileName):
@@ -37,9 +39,10 @@ def GetLottoHistoryToCsv():
 
                 print(str(i) + '회 당첨번호 :', nubmerList, '보너스 번호 :', bonusNumber, '1등 수 :', totalCnt, '인당 당첨금액 :', price)
                 f.writelines(str(i) + ',' + n1 + ',' + n2 + ',' + n3 + ',' + n4 + ',' + n5 + ',' + n6 + ',' + bonusNumber + ',' + totalCnt + ',' + price + '\n')
+    return int(soup.find(id="lottoDrwNo").text)
 
-
-def GetLottoHistoryToSQL():
+def GetLottoHistoryToSQL(soup):
+    lastSeries = getLastSeries(soup)
     chkQuery = "SELECT series from lotto_history"
     chkResult = sql.selectStmt(chkQuery)
     chkList = []
@@ -69,4 +72,4 @@ def GetLottoHistoryToSQL():
         query = "insert into lotto_history(series, n1, n2, n3, n4, n5, n6, bonus_n, total_winner, each_price, timestamp) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, NOW()) " % (int(i), int(n1), int(n2), int(n3), int(n4), int(n5), int(n6), int(bonusNumber), int(totalCnt), int(price))
         sql.insertStmt(query=query)
 
-GetLottoHistoryToSQL()
+# GetLottoHistoryToSQL(soup)
