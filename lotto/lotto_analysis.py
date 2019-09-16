@@ -1,8 +1,8 @@
 #-*- coding:utf-8 -*-
 
 from numpy.random import choice
-import lotto_stistics as stistics
-import lotto_history as history
+import lotto_statistics as statistics
+import lotto_crawling as crawling
 
 
 # 번호 추천
@@ -115,17 +115,11 @@ def getLottoNumByNumberCount(lottoDictByNumber):
 
     return pickNumberList
 
-def getRecommendNumbers(lastSeries=None):
-    # lotto history 가져오기
-    if lastSeries == None:
-        lastSeries = history.getLastSeries()
-    lottoHistory = stistics.getLottoHistory(lastSeries)
-
-    # 당첨번호 통계 요약정보
-    lottoDictByNumber, lottoDictBySum = stistics.getLottoDic(lottoHistory)
-
-    pickNumberList = recommendNumberBySum(lottoDictByNumber, lottoDictBySum)
+def getRecommendNumbers(lottoDictByNumber, lottoDictBySum):
+    pickNumberList = getLottoNumByNumberCount(lottoDictByNumber)
 
     return pickNumberList
+
+# getRecommendNumbers()
 
 

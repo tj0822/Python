@@ -1,15 +1,16 @@
 #-*- coding:utf-8 -*-
 
-import mysql.connector
+import pymysql as mysql
 
 
-id = 'python'
-password = 'python'
-host = '13.124.58.9'
-db ='test'
+
+id = 'tj0822'
+password = 'jjin1226'
+host = '192.168.0.5'
+db ='t_data_platform'
 
 def selectStmt(query = None):
-    cnx = mysql.connector.connect(user=id, password=password, host=host, database=db)
+    cnx = mysql.connect(user=id, password=password, host=host, database=db)
     cursor = cnx.cursor()
 
     cursor.execute(query)
@@ -22,7 +23,7 @@ def selectStmt(query = None):
 
 
 def insertStmt(query = None):
-    cnx = mysql.connector.connect(user=id, password=password, host=host, database=db)
+    cnx = mysql.connect(user=id, password=password, host=host, database=db)
     cursor = cnx.cursor()
     try:
         rtn = cursor.execute(query)

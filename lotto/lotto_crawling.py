@@ -4,10 +4,18 @@ from bs4 import BeautifulSoup
 import urllib.request
 import os
 import MySQL as sql
+import ssl
+from urllib.request import urlopen
+
+
 
 # 로또 메인 페이지
 mainUrl = 'http://www.nlotto.co.kr/common.do?method=main'
-soup = BeautifulSoup(urllib.request.urlopen(mainUrl).read(), "lxml")
+context = ssl._create_unverified_context()
+result = urlopen(mainUrl, context=context)
+soup = BeautifulSoup(result.read(), "lxml")
+# soup = BeautifulSoup(urllib.request.urlopen(mainUrl).read(), "lxml")
+
 
 # 마지막 회차 조회
 def getLastSeries(soup=soup):
@@ -57,11 +65,11 @@ def GetLottoHistoryToSQL(soup):
     for i in crawlingList:
         url = 'http://www.nlotto.co.kr/gameResult.do?method=byWin&drwNo=' + str(i)
 
-        soup = BeautifulSoup(urllib.request.urlopen(url).read(), "lxml")
-
+        soup = BeautifulSoup(urllib.request.urlopen(url, context=context).read().decode('euc-kr', 'ignore'), "lxml")
+        # print(soup)
         result = str(soup.find(id="desc")['content'])
         ret = result.split('당첨번호')
-
+        # print(ret)
         nubmerList = ret[1].split('.')[0].strip().split('+')[0].split((','))
         n1, n2, n3, n4, n5, n6 = nubmerList
         bonusNumber = ret[1].split('.')[0].strip().split('+')[1]
@@ -70,6 +78,7 @@ def GetLottoHistoryToSQL(soup):
 
         print(str(i) + '회 당첨번호 :', nubmerList, '보너스 번호 :', bonusNumber, '1등 수 :', totalCnt, '인당 당첨금액 :', price)
         query = "insert into lotto_history(series, n1, n2, n3, n4, n5, n6, bonus_n, total_winner, each_price, timestamp) VALUES (%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, NOW()) " % (int(i), int(n1), int(n2), int(n3), int(n4), int(n5), int(n6), int(bonusNumber), int(totalCnt), int(price))
+        # print(query)
         sql.insertStmt(query=query)
 
-# GetLottoHistoryToSQL(soup)
+GetLottoHistoryToSQL(soup)
