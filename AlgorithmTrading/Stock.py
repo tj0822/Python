@@ -18,7 +18,7 @@ def GetKospi200():
     for item in soup.find_all('td'):
         if item.has_attr('class') and 'pgRR' in item['class']:
             lastPageNum = int(str(item.a['href']).replace('/sise/entryJongmok.nhn?&page=', ''))
-
+1
     for i in range(1, lastPageNum+1):
         target_url = base_url + str(i)
         # soup = BeautifulSoup(urllib.request.urlopen(target_url).read(), "lxml")
