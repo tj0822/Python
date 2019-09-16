@@ -10,6 +10,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import AlgorithmTrading.Stock as stock
 import os
+import MySQL as sql
 
 #ktop 30 code : name
 c_KTOP30 = [
@@ -55,10 +56,11 @@ toDate = "2017-05-20"
 
 
 def GetPriceData(item, mode = "part", data = None):
+    # print(item)
     code = item[0]
     shift = item[1]
     name = item[2]
-    header = code + "_" + str(shift)
+    # header = code + "_" + str(shift)
     url = "http://finance.naver.com/item/sise_day.nhn?code=" + code
     page = "&page="
     idx = 1
@@ -77,9 +79,11 @@ def GetPriceData(item, mode = "part", data = None):
             break
         soup = BeautifulSoup(source_code.text,"lxml")
         # print(idx)
-        # print(soup.find('td', class_='pgRR').find('a'))
-        for tr in filter(lambda x:x.get("onmouseout") is not None, soup.find_all("tr")):
+        # print(soup.find('td', class_='on').find('a').text)
+        if soup.find('td', class_='on').find('a').text != str(idx):
+            break
 
+        for tr in filter(lambda x:x.get("onmouseout") is not None, soup.find_all("tr")):
             if tr.find("span",class_ = "tah p10 gray03") is None:
                 # 가격데이터가 없으면 False로 빠져나옴
                 bBool = False
@@ -102,18 +106,28 @@ def GetPriceData(item, mode = "part", data = None):
                 sIdx += 1
                 amount = float(cPrice[sIdx].text.replace("," ,""))
 
-                if(datetimeList.__contains__(dt)):
+                if(datetimeList.__contains__(dt) or dt == ""):
                     bBool = False
                     break
                 else:
-                    datetimeList.append(dt)
-                    closePriceList.append(pClose)
-                    startPriceList.append(pStart)
-                    minPriceList.append(pMin)
-                    maxPriceList.append(pMax)
-                    amountList.append(amount)
+                    # datetimeList.append(dt)
+                    # closePriceList.append(pClose)
+                    # startPriceList.append(pStart)
+                    # minPriceList.append(pMin)
+                    # maxPriceList.append(pMax)
+                    # amountList.append(amount)
+
+                    selectQuery = "select count(*) from stock_history where date = '%s' and stock_code = '%s' " % (dt, code)
+                    result = sql.selectStmt(selectQuery)
+                    # print(int(result[0][0]))
+                    if int(result[0][0]) == 0:
+                        insertQuery = "insert into stock_history(date, stock_code, open_price, close_price, min_price, max_price, amount, timestamp) VALUES ('%s', '%s', %d, %d, %d, %d, %d, NOW()) " % (dt, code, pStart, pClose, pMin, pMax, amount)
+                        # print(query)
+                        sql.insertStmt(query=insertQuery)
+                    else:
+                        continue
         idx += 1
-        
+'''        
     if mode == "part" :
         if (code + str(shift))== (target[0] + str(target[1])):
             if toDate in datetimeList :
@@ -143,7 +157,7 @@ def GetPriceData(item, mode = "part", data = None):
         df["datetime"] = df.datetime.map(lambda x: pd.to_datetime(x))      
         df = df.set_index("datetime")
         return df
-
+'''
 
 
 
@@ -154,14 +168,15 @@ print(crawlDate)
 directory = 'data/' + crawlDate
 
 for key in stockDict.keys():
-    print(key, ' : ', stockDict[key])
-    data = GetPriceData(target,"all")
+    print(key, ':', stockDict[key])
+    target = (key, 0, stockDict[key])
+    data = GetPriceData(target, "all")
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-    outFileName = 'data/' + stockDict[key] + '.csv'
-    data.to_csv(outFileName)
+    # if not os.path.exists(directory):
+    #     os.makedirs(directory)
+    #
+    # outFileName = 'data/' + stockDict[key] + '.csv'
+    # data.to_csv(outFileName)
 
 # data = GetPriceData(target,"all")
 #
