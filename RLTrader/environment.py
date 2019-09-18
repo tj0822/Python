@@ -15,7 +15,7 @@ class Environment:
     def observe(self):
         if len(self.chart_data) > self.idx + 1:
             self.idx += 1
-            self.observation = self.chart_data[self.idx]
+            self.observation = self.chart_data.iloc[self.idx]
             return self.observation
         return None
 

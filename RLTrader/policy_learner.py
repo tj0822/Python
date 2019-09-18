@@ -113,8 +113,7 @@ class PolicyLearner:
                     break
 
                 # 정책 신경망 또는 탐험에 의한 행동 결정
-                action, confidence, exploration = self.agent.decide_action(
-                    self.policy_network, self.sample, epsilon)
+                action, confidence, exploration = self.agent.decide_action(self.policy_network, self.sample, epsilon)
 
                 # 결정한 행동을 수행하고 즉시 보상과 지연 보상 획득
                 immediate_reward, delayed_reward = self.agent.act(action, confidence)

@@ -13,7 +13,7 @@ class Visualizer:
 
     def prepare(self, chart_data):
         # 캔버스를 초기화하고 4개의 차트를 그릴 준비
-        self.fig, self.axes = plt.subplot(nrows=4, ncols=1, facecolor='w', sharex=True)
+        self.fig, self.axes = plt.subplots(nrows=4, ncols=1, facecolor='w', sharex=True)
         for ax in self.axes:
             # 보기 어려운 과학적 표기 비활성화
             ax.get_xaxis().get_major_formatter().set_scientific(False)
@@ -36,7 +36,7 @@ class Visualizer:
 
 
     def plot(self, epoch_str=None, num_epoches=None, epsilon=None, action_list=None, actions=None, num_stocks=None, outvals=None, exps=None, learning=None, initial_balance=None, pvs=None):
-        x = np.arrange(len(actions))        # 모든 차트가 공유할 x축 데이터
+        x = np.arange(len(actions))        # 모든 차트가 공유할 x축 데이터
         actions = np.array(actions)         # 에이전트의 행동 배열
         outvals = np.array(outvals)         # 정책 신경망의 출력 배열
         pvs_base = np.zeros(len(actions)) + initial_balance # 초기 자본금 배열
