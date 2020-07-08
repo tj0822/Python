@@ -12,48 +12,6 @@ import AlgorithmTrading.Stock as stock
 import os
 import MySQL as sql
 
-#ktop 30 code : name
-c_KTOP30 = [
- ("000720" , 1 ,"현대건설"     )
-,("000720" , 2 ,"현대건설"     )
-,("000720" , 3 ,"현대건설"     )
-,("032830" , 1 ,"삼성생명"     )
-,("055550" , 1 ,"신한지주"     )
-,("105560" , 1 ,"KB금융"       )
-,("000810" , 1 ,"삼성화재"     )
-,("035420" , 1 ,"Naver"        )
-,("096770" , 1 ,"SK이노베이션" )
-,("000270" , 1 ,"기아차"       )
-,("005380" , 1 ,"현대차"       )
-,("009540" , 1 ,"현대중공업"   )
-,("012330" , 1 ,"현대모비스"   )
-,("086280" , 1 ,"현대글로비스" )
-,("028260" , 1 ,"삼성물산"     )
-,("139480" , 1 ,"이마트"       )
-,("000100" , 1 ,"유한양행"     )
-,("035720" , 2 ,"카카오"       )
-,("000660" , 1 ,"SK하이닉스"   )
-,("005930" , 1 ,"삼성전자"     )
-,("006400" , 1 ,"삼성SDI"      )
-,("009150" , 1 ,"삼성전기"     )
-,("034220" , 1 ,"LG디스플레이" )
-,("066570" , 1 ,"LG전자"       )
-,("068270" , 1 ,"셀트리온"     )
-,("004020" , 1 ,"현대제철"     )
-,("005490" , 1 ,"POSCO"        )
-,("017670" , 1 ,"SK텔레콤"     )
-,("011170" , 1 ,"롯데케미칼"   )
-,("051910" , 1 ,"LG화학"       )
-,("090430" , 1 ,"아모레퍼시픽" )
-,("161390" , 1 ,"한국타이어"   )
-]
-
-#target code (current code = kakao)
-target = ("035720" , 0 ,"카카오")
-
-#input day
-toDate = "2017-05-20"
-
 
 def GetPriceData(item, mode = "part", data = None):
     # print(item)
@@ -70,6 +28,8 @@ def GetPriceData(item, mode = "part", data = None):
     minPriceList = []
     maxPriceList = []
     amountList = []
+
+
     bBool = True
     while bBool:
         fullAddr = url + page + str(idx)
@@ -121,11 +81,50 @@ def GetPriceData(item, mode = "part", data = None):
                     result = sql.selectStmt(selectQuery)
                     # print(int(result[0][0]))
                     if int(result[0][0]) == 0:
-                        insertQuery = "insert into stock_history(date, stock_code, open_price, close_price, min_price, max_price, amount, timestamp) VALUES ('%s', '%s', %d, %d, %d, %d, %d, NOW()) " % (dt, code, pStart, pClose, pMin, pMax, amount)
-                        # print(query)
+                        # 투자정보
+                        # totalCnt = []  # 상장주식수
+                        # forignerHaveLimit = []  # 외국인한도보유주식수
+                        # forignerHaveCnt = []  # 외국인보유주식수
+                        # max52week = []  # 52주 최고
+                        # min52week = []  # 52주 최저
+                        # per = []
+                        # eps = []
+                        # per_eps_date = []
+                        # estimate_per = []  # 추정 PER
+                        # estimate_eps = []  # 추정 EPS
+                        # pbr = []
+                        # bps = []
+                        # pbr_bps_date = []
+                        # dvr = []  # 배당수익
+
+                        url = "https://finance.naver.com/item/main.nhn?code=" + code
+                        source_code = requests.get(url)
+                        if source_code is None:
+                            break
+                        soup = BeautifulSoup(source_code.text, "lxml")
+
+                        # print(soup.find(id='tab_con1').find_all('em'))
+                        totalCnt = float(soup.find(id='tab_con1').find_all('em')[2].text.replace(',', '').replace('N/A', '0'))
+                        forignerHaveLimit = float(soup.find(id='tab_con1').find_all('em')[5].text.replace(',', '').replace('N/A', '0'))
+                        forignerHaveCnt = float(soup.find(id='tab_con1').find_all('em')[6].text.replace(',', '').replace('N/A', '0'))
+                        max52week = float(soup.find(id='tab_con1').find_all('em')[10].text.replace(',', '').replace('N/A', '0'))
+                        min52week = float(soup.find(id='tab_con1').find_all('em')[11].text.replace(',', '').replace('N/A', '0'))
+                        per = float(soup.find(id='tab_con1').find_all('em')[12].text.replace(',', '').replace('N/A', '0'))
+                        eps = float(soup.find(id='tab_con1').find_all('em')[13].text.replace(',', '').replace('N/A', '0'))
+                        per_eps_date = soup.find(id='tab_con1').find_all('span', class_='date')[0].text.replace('(','').replace(')','')
+                        estimate_per = float(soup.find(id='tab_con1').find_all('em')[14].text.replace(',', '').replace('N/A', '0'))
+                        estimate_eps = float(soup.find(id='tab_con1').find_all('em')[15].text.replace(',', '').replace('N/A', '0'))
+                        pbr = float(soup.find(id='tab_con1').find_all('em')[16].text.replace(',', '').replace('N/A', '0'))
+                        bps = float(soup.find(id='tab_con1').find_all('em')[17].text.replace(',', '').replace('N/A', '0'))
+                        pbr_bps_date = soup.find(id='tab_con1').find_all('span', class_='date')[1].text.replace('(','').replace(')','')
+                        dvr = float(soup.find(id='tab_con1').find_all('em')[18].text.replace(',', '').replace('N/A', '0'))
+
+                        insertQuery = "insert into stock_history(date, stock_code, open_price, close_price, min_price, max_price, amount, timestamp, total_cnt, forignerHaveLimit, forignerHaveCnt, max52week, min52week, per, eps, per_eps_date, estimate_per, estimate_eps, pbr, bps, pbr_bps_date, dvr) VALUES ('%s', '%s', %d, %d, %d, %d, %d, NOW(), %d, %d, %d, %d, %d, %0.2f, %d, '%s', %0.2f, %d, %0.2f, %d, '%s', %0.2f ) " % (dt, code, pStart, pClose, pMin, pMax, amount, totalCnt, forignerHaveLimit, forignerHaveCnt, max52week, min52week, per, eps, per_eps_date, estimate_per, estimate_eps, pbr, bps, pbr_bps_date, dvr)
+                        print(insertQuery)
                         sql.insertStmt(query=insertQuery)
                     else:
-                        continue
+                        bBool = False
+                        break
         idx += 1
 '''        
     if mode == "part" :
@@ -162,6 +161,7 @@ def GetPriceData(item, mode = "part", data = None):
 
 
 stockDict = stock.GetKospi200()
+# stockDict = {'005930':'삼성전자'}
 
 crawlDate = str(datetime.today().year) + str(datetime.today().month) + str(datetime.today().day)
 print(crawlDate)
@@ -170,6 +170,7 @@ directory = 'data/' + crawlDate
 for key in stockDict.keys():
     print(key, ':', stockDict[key])
     target = (key, 0, stockDict[key])
+    # if eval('+'.join(key)) % 2 == 1:
     data = GetPriceData(target, "all")
 
     # if not os.path.exists(directory):
