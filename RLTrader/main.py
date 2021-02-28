@@ -4,12 +4,8 @@ import os
 import sys
 import logging
 import RLTrader.settings as settings
-import RLTrader.MySQL as sql
 import RLTrader.data_manager
 from RLTrader.policy_learner import PolicyLearner
-
-query = 'select distinct stock_code from stock_kospi200'
-result = sql.selectStmt(query)
 
 # for stock in result:
 #      print(list(stock.values())[0])
@@ -32,11 +28,13 @@ logging.basicConfig(format="%(message)s", handlers=[file_handler, stream_handler
 import RLTrader.data_manager
 from RLTrader.policy_learner import PolicyLearner
 '''
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 if __name__ == '__main__':
-    for stock in result:
+    # for stock in result:
         # print(list(stock.values())[0])
-        stock_code = list(stock.values())[0]
+        stock_code = '005930'
 
         log_dir = os.path.join(settings.BASE_DIR, 'logs/%s' % stock_code)
         timestr = settings.get_time_str()
@@ -55,11 +53,11 @@ if __name__ == '__main__':
         training_data = RLTrader.data_manager.build_training_data(prep_data)
 
         # 기간 필터링
-        training_data = training_data[(training_data['date'] >= '2017-01-01') & (training_data['date'] < '2018-01-01')]
+        training_data = training_data[(training_data['date'] >= '2019-01-01') & (training_data['date'] < '2020-01-01')]
         training_data = training_data.dropna()
 
         # 차트 데이터 분리
-        features_chart_data = ['date', 'open', 'high', 'low', 'close', 'volume']
+        features_chart_data = ['date', 'open', 'close', 'low', 'high', 'volume']
         chart_data = training_data[features_chart_data]
 
         # 학습 데이터 분리
@@ -75,7 +73,14 @@ if __name__ == '__main__':
         training_data = training_data[features_training_data]
 
         # 강화학습 시작
-        policy_learner = PolicyLearner(stock_code=stock_code, chart_data=chart_data, training_data=training_data, min_trading_unit=1, max_trading_unit=2, delayed_reward_threshold=.2, lr=.001)
+        policy_learner = PolicyLearner(stock_code=stock_code,
+                                       chart_data=chart_data,
+                                       training_data=training_data,
+                                       min_trading_unit=1,
+                                       max_trading_unit=2,
+                                       delayed_reward_threshold=.2,
+
+                                       lr=.001)
         policy_learner.fit(balance=10000000, num_epoches=100, discount_factor=0, start_epsilon=.5)
 
         # 정책 신경망을 파일로 저장

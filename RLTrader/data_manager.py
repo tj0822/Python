@@ -2,12 +2,12 @@
 
 import pandas as pd
 import numpy as np
-import RLTrader.MySQL as sql
+
 
 def load_chart_data(stock_code=None):
-    query = "select date, stock_code, open_price open, close_price close, min_price low , max_price high, amount volume from stock_history where stock_code = '%s' " % (stock_code)
-    result = sql.selectStmt(query)
-    df = pd.DataFrame(result)
+    df = pd.read_csv("/Users/tedz/Workspace/Jupyter/Stock/data/005930.csv",
+                        names=["date", "stock_code", "open", "close", "low", "high", "volume"],
+                        skiprows=1)
     return df
 
 def preprocess(chart_data):
