@@ -5,7 +5,7 @@ import numpy as np
 
 
 def load_chart_data(stock_code=None):
-    df = pd.read_csv("/Users/tedz/Workspace/Jupyter/Stock/data/005930.csv",
+    df = pd.read_csv("/Users/tedz/Workspace/Jupyter/Stock/data/" + stock_code + ".csv",
                         names=["date", "stock_code", "open", "close", "low", "high", "volume"],
                         skiprows=1)
     return df

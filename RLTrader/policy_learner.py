@@ -225,4 +225,4 @@ class PolicyLearner:
         if model_path is None:
             return
         self.policy_network.load_model(model_path=model_path)
-        self.fit(balance=balance, num_epoches=1, learning=False)
+        self.fit(balance=balance, num_Epoches=1, learning=False)

@@ -6,6 +6,9 @@ import logging
 import RLTrader.settings as settings
 import RLTrader.data_manager
 from RLTrader.policy_learner import PolicyLearner
+import pandas as pd
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # for stock in result:
 #      print(list(stock.values())[0])
@@ -28,13 +31,21 @@ logging.basicConfig(format="%(message)s", handlers=[file_handler, stream_handler
 import RLTrader.data_manager
 from RLTrader.policy_learner import PolicyLearner
 '''
-import os
-os.environ['KMP_DUPLICATE_LIB_OK']='True'
+
+stockList = []
+
+dataDir = "/Users/tedz/Workspace/Jupyter/Stock/data/"
+kospiDf = pd.read_csv(dataDir+"kospi_list.csv", header=None, dtype=str, names=["date", "code", "name"])
+kospiDf = kospiDf[kospiDf["date"] == kospiDf["date"].max()]
+
+
+
 
 if __name__ == '__main__':
-    # for stock in result:
-        # print(list(stock.values())[0])
-        stock_code = '005930'
+    # for i in kospiDf[kospiDf["code"] == "005930"].index:
+    for i in kospiDf.index:
+        stock_code = kospiDf.loc[i]["code"]
+        print(kospiDf.loc[i]["code"], kospiDf.loc[i]["name"])
 
         log_dir = os.path.join(settings.BASE_DIR, 'logs/%s' % stock_code)
         timestr = settings.get_time_str()
@@ -69,6 +80,7 @@ if __name__ == '__main__':
             'close_ma20_ratio', 'volume_ma20_ratio',
             'close_ma60_ratio', 'volume_ma60_ratio',
             'close_ma120_ratio', 'volume_ma120_ratio'
+
         ]
         training_data = training_data[features_training_data]
 
@@ -77,11 +89,10 @@ if __name__ == '__main__':
                                        chart_data=chart_data,
                                        training_data=training_data,
                                        min_trading_unit=1,
-                                       max_trading_unit=2,
+                                       max_trading_unit=1000,
                                        delayed_reward_threshold=.2,
-
                                        lr=.001)
-        policy_learner.fit(balance=10000000, num_epoches=100, discount_factor=0, start_epsilon=.5)
+        policy_learner.fit(balance=30000000, num_epoches=100, discount_factor=0, start_epsilon=.5)
 
         # 정책 신경망을 파일로 저장
         model_dir = os.path.join(settings.BASE_DIR, 'models/%s' % stock_code)
