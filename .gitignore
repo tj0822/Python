@@ -2,3 +2,6 @@
 *.png
 *.log
 *.h5
+.idea/workspace.xml
+*.pyc
+*.pyc

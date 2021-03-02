@@ -42,8 +42,8 @@ kospiDf = kospiDf[kospiDf["date"] == kospiDf["date"].max()]
 
 
 if __name__ == '__main__':
-    # for i in kospiDf[kospiDf["code"] == "005930"].index:
-    for i in kospiDf.index:
+    for i in kospiDf[kospiDf["code"] == "000270"].index:
+    # for i in kospiDf.index:
         stock_code = kospiDf.loc[i]["code"]
         print(kospiDf.loc[i]["code"], kospiDf.loc[i]["name"])
 
